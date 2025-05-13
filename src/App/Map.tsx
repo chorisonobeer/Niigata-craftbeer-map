@@ -60,107 +60,107 @@ const Content = (props: Props) => {
   const mapNode = React.useRef<HTMLDivElement>(null);
   const [mapObject, setMapObject] = React.useState<any>();
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
+  const [isLayerInitialized, setIsLayerInitialized] = useState(false);
 
-  // マーカーを更新する関数
+  // マーカーを更新する関数（setData方式）
   const updateMarkers = useCallback((map: any, data: Pwamap.ShopData[]) => {
     if (!map) return;
 
     setIsLoadingMarkers(true);
 
-    // 既存のソースとレイヤーを削除
-    if (map.getSource('shops')) {
-      if (map.getLayer('shop-points')) map.removeLayer('shop-points');
-      if (map.getLayer('shop-symbol')) map.removeLayer('shop-symbol');
-      if (map.getLayer('clusters')) map.removeLayer('clusters');
-      if (map.getLayer('cluster-count')) map.removeLayer('cluster-count');
-      map.removeSource('shops');
-    }
+    const geojson = toGeoJson(data);
 
-    // データが空の場合はマーカーを表示しない
-    if (data.length === 0) {
+    // 既にソースとレイヤーが存在する場合はsetDataのみ
+    if (map.getSource('shops') && isLayerInitialized) {
+      map.getSource('shops').setData(geojson);
       setIsLoadingMarkers(false);
       return;
     }
 
-    const geojson = toGeoJson(data);
-    map.addSource('shops', {
-      type: 'geojson',
-      data: geojson,
-      cluster: true,
-      clusterMaxZoom: 14,
-      clusterRadius: 25,
-    });
+    // 初回のみソースとレイヤーを追加
+    if (!map.getSource('shops')) {
+      map.addSource('shops', {
+        type: 'geojson',
+        data: geojson,
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 25,
+      });
+    }
 
-    // マーカーレイヤーを追加
-    map.addLayer({
-      id: 'shop-points',
-      type: 'circle',
-      source: 'shops',
-      filter: ['all', ['==', '$type', 'Point']],
-      paint: {
-        'circle-radius': 13,
-        // カテゴリごとに色分け
-        'circle-color': [
-          'match',
-          ['get', 'カテゴリ'],
-          'ビアバー', CATEGORY_COLORS['ビアバー'],
-          'ブリューパブ', CATEGORY_COLORS['ブリューパブ'],
-          'ブルワリー', CATEGORY_COLORS['ブルワリー'],
-          '酒屋', CATEGORY_COLORS['酒屋'],
-          'その他', CATEGORY_COLORS['その他'],
-          '#FF0000' // デフォルト色
-        ],
-        'circle-opacity': 0.4,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#FFFFFF',
-        'circle-stroke-opacity': 1,
-      },
-    });
-
-    map.addLayer({
-      id: 'shop-symbol',
-      type: 'symbol',
-      source: 'shops',
-      filter: ['all', ['==', '$type', 'Point']],
-      paint: {
-        'text-color': '#000000',
-        'text-halo-color': '#FFFFFF',
-        'text-halo-width': 2,
-      },
-      layout: {
-        'text-field': "{スポット名}",
-        'text-font': ['Noto Sans Regular'],
-        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
-        'text-radial-offset': 0.5,
-        'text-justify': 'auto',
-        'text-size': 12,
-        'text-anchor': 'top',
-        'text-max-width': 12,
-        'text-allow-overlap': false,
-      },
-    });
-
-    // イベントハンドラを設定
-    const layers = ['shop-points', 'shop-symbol'];
-    layers.forEach(layer => {
-      map.on('mouseenter', layer, () => {
-        map.getCanvas().style.cursor = 'pointer';
+    if (!isLayerInitialized) {
+      map.addLayer({
+        id: 'shop-points',
+        type: 'circle',
+        source: 'shops',
+        filter: ['all', ['==', '$type', 'Point']],
+        paint: {
+          'circle-radius': 13,
+          // カテゴリごとに色分け
+          'circle-color': [
+            'match',
+            ['get', 'カテゴリ'],
+            'ビアバー', CATEGORY_COLORS['ビアバー'],
+            'ブリューパブ', CATEGORY_COLORS['ブリューパブ'],
+            'ブルワリー', CATEGORY_COLORS['ブルワリー'],
+            '酒屋', CATEGORY_COLORS['酒屋'],
+            'その他', CATEGORY_COLORS['その他'],
+            '#FF0000' // デフォルト色
+          ],
+          'circle-opacity': 0.4,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#FFFFFF',
+          'circle-stroke-opacity': 1,
+        },
       });
 
-      map.on('mouseleave', layer, () => {
-        map.getCanvas().style.cursor = '';
+      map.addLayer({
+        id: 'shop-symbol',
+        type: 'symbol',
+        source: 'shops',
+        filter: ['all', ['==', '$type', 'Point']],
+        paint: {
+          'text-color': '#000000',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 2,
+        },
+        layout: {
+          'text-field': "{スポット名}",
+          'text-font': ['Noto Sans Regular'],
+          'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+          'text-radial-offset': 0.5,
+          'text-justify': 'auto',
+          'text-size': 12,
+          'text-anchor': 'top',
+          'text-max-width': 12,
+          'text-allow-overlap': false,
+        },
       });
 
-      map.on('click', layer, (event: any) => {
-        if (!event.features[0].properties.cluster) {
-          onSelectShop(event.features[0].properties);
-        }
-      });
-    });
+      // イベントハンドラを設定
+      const layers = ['shop-points', 'shop-symbol'];
+      layers.forEach(layer => {
+        map.on('mouseenter', layer, () => {
+          map.getCanvas().style.cursor = 'pointer';
+        });
 
-    setCluster(map);
+        map.on('mouseleave', layer, () => {
+          map.getCanvas().style.cursor = '';
+        });
+
+        map.on('click', layer, (event: any) => {
+          if (!event.features[0].properties.cluster) {
+            onSelectShop(event.features[0].properties);
+          }
+        });
+      });
+
+      setCluster(map);
+      setIsLayerInitialized(true);
+    }
+
     setIsLoadingMarkers(false);
-  }, [onSelectShop]);
+  }, [onSelectShop, isLayerInitialized]);
 
   // マーカー更新のエフェクト
   useEffect(() => {
