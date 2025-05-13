@@ -104,6 +104,8 @@ const Content = (props: Props) => {
             'ブリューパブ', CATEGORY_COLORS['ブリューパブ'],
             'ブルワリー', CATEGORY_COLORS['ブルワリー'],
             '酒屋', CATEGORY_COLORS['酒屋'],
+            'スーパーマーケット', CATEGORY_COLORS['スーパーマーケット'],
+            'ゲストハウス', CATEGORY_COLORS['ゲストハウス'],
             'その他', CATEGORY_COLORS['その他'],
             '#FF0000' // デフォルト色
           ],
@@ -285,5 +287,7 @@ const CATEGORY_COLORS: { [key: string]: string } = {
   "ブリューパブ": "#FF9800",
   "ブルワリー": "#4CAF50",
   "酒屋": "#E91E63",
+"スーパーマーケット": "#1e90ff",
+"ゲストハウス": "#008080",  
   "その他": "#9C27B0"
 };
