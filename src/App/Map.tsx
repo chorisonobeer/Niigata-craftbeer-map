@@ -99,7 +99,17 @@ const Content = (props: Props) => {
       filter: ['all', ['==', '$type', 'Point']],
       paint: {
         'circle-radius': 13,
-        'circle-color': '#FF0000',
+        // カテゴリごとに色分け
+        'circle-color': [
+          'match',
+          ['get', 'カテゴリ'],
+          'ビアバー', CATEGORY_COLORS['ビアバー'],
+          'ブリューパブ', CATEGORY_COLORS['ブリューパブ'],
+          'ブルワリー', CATEGORY_COLORS['ブルワリー'],
+          '酒屋', CATEGORY_COLORS['酒屋'],
+          'その他', CATEGORY_COLORS['その他'],
+          '#FF0000' // デフォルト色
+        ],
         'circle-opacity': 0.4,
         'circle-stroke-width': 2,
         'circle-stroke-color': '#FFFFFF',
@@ -268,3 +278,12 @@ const Content = (props: Props) => {
 };
 
 export default Content;
+
+// カテゴリごとの色マッピング
+const CATEGORY_COLORS: { [key: string]: string } = {
+  "ビアバー": "#00A0E6",
+  "ブリューパブ": "#FF9800",
+  "ブルワリー": "#4CAF50",
+  "酒屋": "#E91E63",
+  "その他": "#9C27B0"
+};
