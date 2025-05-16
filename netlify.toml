@@ -1,0 +1,19 @@
+# Netlify設定ファイル
+
+# ビルド設定
+[build]
+  # ビルドコマンド
+  command = "npm run build"
+  # 公開ディレクトリ
+  publish = "build"
+
+# プロダクション環境の設定
+[context.production]
+  # 環境変数
+  environment = { NODE_VERSION = "20" }
+
+# リダイレクト設定 - SPAのためのフォールバック
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

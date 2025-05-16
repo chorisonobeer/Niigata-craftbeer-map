@@ -4,7 +4,7 @@
     <style>
       :root {
         --primary-color: %REACT_APP_PRIMARY_COLOR%;
-        --background-image: url(%REACT_APP_BACKGROUND_IMAGE_URL%);
+        --background-image: url(./back.jpg);
       }
     </style>
     <meta charset="utf-8">
@@ -16,11 +16,15 @@
     <meta name="description" content="%REACT_APP_TITLE%">
     <meta name="apple-mobile-web-app-title" content="%REACT_APP_TITLE%">
     <meta name="twitter:card" content="summary_large_image">
-    <meta property="og:url" content="%REACT_APP_HOMEPAGE_URL%">
+    <meta name="twitter:site" content="@your_twitter_handle">
+    <meta name="twitter:title" content="%REACT_APP_TITLE%">
+    <meta name="twitter:description" content="新潟のクラフトビールが飲める・買える・楽しめるMAPです。新潟をもっと楽しもう！！">
+    <meta name="twitter:image" content="https://niigata-craftbeer-map.netlify.app/ogp.jpg">
+    <meta property="og:url" content="https://niigata-craftbeer-map.netlify.app/">
     <meta property="og:title" content="%REACT_APP_TITLE%">
     <meta property="og:image" content="https://niigata-craftbeer-map.netlify.app/ogp.jpg">
     <meta property="og:type" content="website">
-    <meta property=”og:description” content="新潟のクラフトビールが飲める・買える・楽しめるMAPです。新潟をもっと楽しもう！！">
+    <meta property="og:description" content="新潟のクラフトビールが飲める・買える・楽しめるMAPです。新潟をもっと楽しもう！！">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <title>%REACT_APP_TITLE%</title>
     <link rel="icon" type="image/png" sizes="196x196" href="favicon-196.png">
@@ -53,7 +57,7 @@
     <link rel="apple-touch-startup-image" href="apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
   </head>
-  <body>
+  <body style="background-image: url('./back.jpg'); background-size: cover;">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!-- 追加: Portal 用の要素 -->
