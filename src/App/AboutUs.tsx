@@ -1,7 +1,7 @@
 /** 
  * /src/App/AboutUs.tsx
  * 2025-05-02T10:00+09:00
- * 変更概要: 新潟クラフトビールマップ向けに全面リライト
+ * 変更概要: 新潟クラフトビールマップ向けに全面リライト - UIデザイン改善
  */
 import React, { useEffect, useState } from 'react';
 import './AboutUs.scss';
@@ -46,7 +46,7 @@ const Content = () => {
       <div className={`hero-section ${isVisible ? 'visible' : ''}`}>
         <div className="hero-gradient"></div>
         <div className="hero-content">
-          <h1 className="hero-title">NIIGATA CRAFT<br></br> BEER MAP</h1>
+          <h1 className="hero-title">NIIGATA CRAFT BEER MAP</h1>
           <p className="hero-subtitle">新潟のクラフトビールを、もっと身近に、もっとクールに。</p>
           <div className="hero-image-container">
             <img src="/dummy-hero.jpg" alt="新潟クラフトビールイメージ" className="hero-image" />
