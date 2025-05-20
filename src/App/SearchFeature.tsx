@@ -18,6 +18,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
   const [showResults, setShowResults] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showAreaDropdown, setShowAreaDropdown] = useState(false);
+  const [filteredResults, setFilteredResults] = useState<Pwamap.ShopData[]>([]);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const areaDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -157,6 +158,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
       return true;
     });
 
+    setFilteredResults(filtered);
     onSearchResults(filtered);
   }, [data, query, selectedCategory, selectedArea, isOpenNow, hasParking, onSearchResults]);
 
@@ -165,10 +167,16 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
     filterShops();
   }, [filterShops]);
 
+  // コンポーネントマウント時にフィルタリング結果を初期化
+  useEffect(() => {
+    setFilteredResults(data);
+  }, [data]);
+
   // 検索入力ハンドラー
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setShowResults(e.target.value.trim() !== '');
+    const newQuery = e.target.value;
+    setQuery(newQuery);
+    setShowResults(newQuery.trim() !== '');
   };
 
   // カテゴリ選択ハンドラー
@@ -205,6 +213,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
             onClick={() => {
               setQuery('');
               setShowResults(false);
+              setFilteredResults(data);
               onSearchResults(data);
             }}
             aria-label="入力をクリア"
@@ -301,11 +310,11 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
 
       {showResults && (
         <div className="search-results">
-          {data.length === 0 ? (
+          {filteredResults.length === 0 ? (
             <div className="no-results">該当する店舗がありません</div>
           ) : (
             <div className="results-list">
-              {data.map((shop, index) => (
+              {filteredResults.map((shop, index) => (
                 <div
                   key={`shop-result-${index}`}
                   className="result-item"
