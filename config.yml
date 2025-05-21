@@ -6,3 +6,5 @@ logo_image_url: /logo.svg
 background_image_url: /back.jpg
 primary_color: "#00A0E6"
 orderby: distance
+# イベント情報表示用のCSV URL
+event_data_url:
