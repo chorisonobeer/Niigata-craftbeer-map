@@ -114,24 +114,54 @@
   color: #444;
 }
 .event-detail-images {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-top: 0.7rem;
 }
 .event-detail-images img {
-  width: 90px;
-  height: 90px;
+  width: 100%;
+  height: 110px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #eee;
+  background: #fafafa;
+  transition: transform 0.2s;
 }
-.events-loading,
-.events-error {
-  text-align: center;
-  color: #888;
-  margin-top: 2rem;
-  font-size: 1.1rem;
+.event-detail-images img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 2px 12px rgba(0,160,230,0.13);
+}
+.image-modal {
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.18s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.image-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.7rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: 0 8px 32px rgba(0,160,230,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image-modal-content img {
+  max-width: 80vw;
+  max-height: 80vh;
+  border-radius: 8px;
+  object-fit: contain;
 }
 @media (max-width: 600px) {
   .event-detail {
@@ -139,7 +169,17 @@
     max-width: 98vw;
   }
   .event-detail-images img {
-    width: 70px;
     height: 70px;
   }
+  .image-modal-content img {
+    max-width: 98vw;
+    max-height: 70vh;
+  }
+}
+.events-loading,
+.events-error {
+  text-align: center;
+  color: #888;
+  margin-top: 2rem;
+  font-size: 1.1rem;
 }

@@ -17,6 +17,7 @@ const Events: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<EventData | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageModalUrl, setImageModalUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -30,6 +31,7 @@ const Events: React.FC = () => {
           header: true,
           complete: (results) => {
             const features = results.data as EventData[];
+            console.log("Parsed CSV data:", features); // ★追加
             const nextEventList: EventData[] = [];
             for (let i = 0; i < features.length; i++) {
               const feature = features[i];
@@ -85,17 +87,62 @@ const Events: React.FC = () => {
             <button className="close-btn" onClick={closeDetail}>×</button>
             <h2>{selectedEvent["イベント名"]}</h2>
             <div className="event-detail-date">{selectedEvent["開催期間"]}</div>
-            <div className="event-detail-place">場所: {selectedEvent["場所"]}</div>
-            <div className="event-detail-time">{selectedEvent["開始時間"]} ～ {selectedEvent["終了時間"]}</div>
+            <div className="event-detail-place">場所: {selectedEvent["場所"] && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedEvent["場所"] as string)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#1976d2', fontWeight: 'bold', textDecoration: 'underline' }}
+              >{selectedEvent["場所"]}</a>
+            )}</div>
+            <div className="event-detail-time">開催時間： {selectedEvent["開始/終了時間"]}</div>
             <div className="event-detail-description">{selectedEvent["説明文"]}</div>
+            {/* 公式サイト・SNSリンク（説明文の下に追加） */}
+            <div className="event-detail-links" style={{ display: 'flex', gap: '16px', margin: '12px 0' }}>
+              {selectedEvent["公式サイト"] && (
+                <a href={selectedEvent["公式サイト"]} target="_blank" rel="noopener noreferrer" title="公式サイト">
+                  <i className="fa fa-home" style={{ fontSize: '22px', color: '#1976d2' }}></i>
+                </a>
+              )}
+              {selectedEvent["Instagram"] && (
+                <a href={selectedEvent["Instagram"]} target="_blank" rel="noopener noreferrer" title="Instagram">
+                  <i className="fab fa-instagram" style={{ fontSize: '22px', color: '#C13584' }}></i>
+                </a>
+              )}
+              {selectedEvent["Facebook"] && (
+                <a href={selectedEvent["Facebook"]} target="_blank" rel="noopener noreferrer" title="Facebook">
+                  <i className="fab fa-facebook" style={{ fontSize: '22px', color: '#1877f3' }}></i>
+                </a>
+              )}
+              {selectedEvent["X"] && (
+                <a href={selectedEvent["X"]} target="_blank" rel="noopener noreferrer" title="X (旧Twitter)">
+                  <i className="fab fa-x-twitter" style={{ fontSize: '22px', color: '#000' }}></i>
+                </a>
+              )}
+            </div>
             <div className="event-detail-organizer">主催: {selectedEvent["主催者名"]}</div>
             <div className="event-detail-tags">タグ: {selectedEvent["タグ"]}</div>
             <div className="event-detail-images">
               {[1,2,3,4,5,6].map(n => {
                 const url = selectedEvent[`画像URL${n}` as keyof EventData] as string | undefined;
-                return url ? <img key={n} src={url} alt={`イベント画像${n}`} /> : null;
+                return url ? (
+                  <img
+                    key={n}
+                    src={url}
+                    alt={`イベント画像${n}`}
+                    onClick={() => setImageModalUrl(url)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                ) : null;
               })}
             </div>
+            {imageModalUrl && (
+              <div className="image-modal" onClick={() => setImageModalUrl(null)}>
+                <div className="image-modal-content" onClick={e => e.stopPropagation()}>
+                  <img src={imageModalUrl} alt="拡大画像" />
+                </div>
+              </div>
+            )}
             {selectedEvent["緯度"] && selectedEvent["経度"] && (
               <div className="event-detail-map" style={{width: '100%', height: '200px', marginTop: '16px'}}>
                 <a

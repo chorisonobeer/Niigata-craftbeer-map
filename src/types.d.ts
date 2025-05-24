@@ -29,5 +29,10 @@ declare namespace Pwamap {
     非公開?: string;
     緯度?: string;
     経度?: string;
+    公式サイト?: string;
+    Instagram?: string;
+    Facebook?: string;
+    Twitter?: string;
+    X?: string;
   }
 }
