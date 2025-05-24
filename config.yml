@@ -7,4 +7,4 @@ background_image_url: /back.jpg
 primary_color: "#00A0E6"
 orderby: distance
 # イベント情報表示用のCSV URL
-event_data_url:
+event_data_url: https://docs.google.com/spreadsheets/d/e/2PACX-1vT7Y5rToJlUy3hDZi1-G5JiyQat8gzbU0H0I45Dn1mN5y2QoWVzbITC6fcU92Cgn8SAcsCJF6sDk751/pub?gid=0&single=true&output=csv

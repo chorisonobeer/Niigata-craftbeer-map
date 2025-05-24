@@ -12,6 +12,7 @@ import List from './App/List';
 import AboutUs from './App/AboutUs';
 import Category from './App/Category';
 import Images from './App/Images';
+import Events from './App/Events';
 
 import Tabbar from './App/Tabbar';
 import config from "./config.json";
@@ -65,6 +66,7 @@ const App = () => {
             <Route path="/category" element={<Category data={shopList} />} />
             <Route path="/images" element={<Images data={shopList} />} />
             <Route path="/about" element={<AboutUs />} />
+            <Route path="/events" element={<Events />} />
           </Routes>
         </div>
         <div id="modal-root"></div>
