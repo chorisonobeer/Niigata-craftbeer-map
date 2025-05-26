@@ -8,7 +8,6 @@ import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import config from "../config.json";
 import "./Events.scss";
-import Map from "./Map";
 
 type EventData = Pwamap.EventData;
 
@@ -29,16 +28,43 @@ const Events: React.FC = () => {
       .then((csv) => {
         Papa.parse(csv, {
           header: true,
+          dynamicTyping: true,
           complete: (results) => {
             const features = results.data as EventData[];
-            console.log("Parsed CSV data:", features); // ★追加
+            console.log("Parsed CSV data (before trim):", JSON.parse(JSON.stringify(features))); // ★変更：クレンジング前のデータを確認するためディープコピーしてログ出力
             const nextEventList: EventData[] = [];
+            const urlKeys: (keyof EventData)[] = ["公式サイト", "Instagram", "Facebook", "X"]; // URLが含まれる可能性のあるキー
+
             for (let i = 0; i < features.length; i++) {
-              const feature = features[i];
+              const feature = { ...features[i] }; // featureをコピーして変更
               if (!feature["イベント名"] || !feature["開催期間"]) continue;
+
+              // URLクレンジング処理
+              urlKeys.forEach(key => {
+                let value = feature[key] as string | undefined;
+                if (value && typeof value === 'string') {
+                  // まず前後の空白を除去
+                  value = value.trim();
+                  // 次に、文字列の最初と最後がダブルクォートであれば除去
+                  if (value.startsWith('"') && value.endsWith('"')) {
+                    value = value.substring(1, value.length - 1);
+                  }
+                  // さらに、文字列の最初と最後がシングルクォートであれば除去
+                  if (value.startsWith("'") && value.endsWith("'")) {
+                    value = value.substring(1, value.length - 1);
+                  }
+                  // さらに、文字列の最初と最後がバッククォートであれば除去
+                  if (value.startsWith('`') && value.endsWith('`')) {
+                    value = value.substring(1, value.length - 1);
+                  }
+                  (feature[key] as string) = value.trim(); // 最後に再度トリム
+                }
+              });
+
               const event = { index: i, ...feature };
               nextEventList.push(event);
             }
+            console.log("Parsed CSV data (after trim):", nextEventList); // ★追加：クレンジング後のデータを確認
             setEventList(nextEventList);
             setLoading(false);
           },
@@ -70,58 +96,82 @@ const Events: React.FC = () => {
       <h1 className="events-title">イベント一覧</h1>
       <div className="events-list">
         {eventList.length === 0 && <div>イベント情報がありません</div>}
-        {eventList.map((event) => (
-          <div key={event.index} className="event-card" onClick={() => showEventDetail(event)}>
-            <div className="event-card-header">
-              <span className="event-name">{event["イベント名"]}</span>
-              <span className="event-date">{event["開催期間"]}</span>
+        {eventList.map((event) => {
+          const imageUrl = event["画像URL1"] as string | undefined;
+          return (
+            <div key={event.index} className="event-card" onClick={() => showEventDetail(event)}>
+              {imageUrl && (
+                <div className="event-card-image-wrapper">
+                  <img src={imageUrl} alt={event["イベント名"]} className="event-card-image" />
+                </div>
+              )}
+              <div className="event-card-content">
+                <div className="event-card-header">
+                  <span className="event-name">{event["イベント名"]}</span>
+                  <span className="event-date">{event["開催期間"]}</span>
+                </div>
+                <div className="event-place">{event["場所"]?.replace(/〒\d{3}-\d{4}\s*/, '')}</div>
+                {/* <div className="event-description">{event["説明文"]?.slice(0, 60)}...</div> */}
+              </div>
             </div>
-            <div className="event-place">{event["場所"]}</div>
-            <div className="event-description">{event["説明文"]?.slice(0, 60)}...</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {selectedEvent && (
         <div className="event-detail-modal" onClick={closeDetail}>
           <div className="event-detail" onClick={e => e.stopPropagation()}>
             <button className="close-btn" onClick={closeDetail}>×</button>
-            <h2>{selectedEvent["イベント名"]}</h2>
-            <div className="event-detail-date">{selectedEvent["開催期間"]}</div>
-            <div className="event-detail-place">場所: {selectedEvent["場所"] && (
+            <h2 className="event-detail-title">{selectedEvent["イベント名"]}</h2>
+            <div className="event-detail-section event-detail-date"><strong>開催期間:</strong> {selectedEvent["開催期間"]}</div>
+            <div className="event-detail-section event-detail-place"><strong>場所:</strong> {selectedEvent["場所"] && (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedEvent["場所"] as string)}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((selectedEvent["場所"] as string).replace(/〒\d{3}-\d{4}\s*/, ''))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: '#1976d2', fontWeight: 'bold', textDecoration: 'underline' }}
-              >{selectedEvent["場所"]}</a>
+              >{(selectedEvent["場所"] as string).replace(/〒\d{3}-\d{4}\s*/, '')}</a>
             )}</div>
-            <div className="event-detail-time">開催時間： {selectedEvent["開始/終了時間"]}</div>
-            <div className="event-detail-description">{selectedEvent["説明文"]}</div>
-            {/* 公式サイト・SNSリンク（説明文の下に追加） */}
-            <div className="event-detail-links" style={{ display: 'flex', gap: '16px', margin: '12px 0' }}>
+            <div className="event-detail-section event-detail-time">
+              <strong>開催時間：</strong> 
+              <span className="event-time-value">
+                {selectedEvent["開始/終了時間"] && (selectedEvent["開始/終了時間"] as string).split(' / ').map((time, index) => <React.Fragment key={index}>{time}{index < (selectedEvent["開始/終了時間"] as string).split(' / ').length - 1 && <br />}</React.Fragment>)}
+              </span>
+            </div>
+            <div className="event-detail-section event-detail-description">{selectedEvent["説明文"]}</div>
+            {/* 公式サイト・SNSリンク */}
+            <div className="event-detail-section event-detail-links">
               {selectedEvent["公式サイト"] && (
-                <a href={selectedEvent["公式サイト"]} target="_blank" rel="noopener noreferrer" title="公式サイト">
-                  <i className="fa fa-home" style={{ fontSize: '22px', color: '#1976d2' }}></i>
+                <a href={selectedEvent["公式サイト"]} target="_blank" rel="noopener noreferrer" className="event-link official-site-link">
+                  公式サイト
                 </a>
               )}
               {selectedEvent["Instagram"] && (
-                <a href={selectedEvent["Instagram"]} target="_blank" rel="noopener noreferrer" title="Instagram">
-                  <i className="fab fa-instagram" style={{ fontSize: '22px', color: '#C13584' }}></i>
+                <a href={selectedEvent["Instagram"]} target="_blank" rel="noopener noreferrer" title="Instagram" className="event-link social-link">
+                  <i className="fab fa-instagram"></i>
                 </a>
               )}
               {selectedEvent["Facebook"] && (
-                <a href={selectedEvent["Facebook"]} target="_blank" rel="noopener noreferrer" title="Facebook">
-                  <i className="fab fa-facebook" style={{ fontSize: '22px', color: '#1877f3' }}></i>
+                <a href={selectedEvent["Facebook"]} target="_blank" rel="noopener noreferrer" title="Facebook" className="event-link social-link">
+                  <i className="fab fa-facebook"></i>
                 </a>
               )}
               {selectedEvent["X"] && (
-                <a href={selectedEvent["X"]} target="_blank" rel="noopener noreferrer" title="X (旧Twitter)">
-                  <i className="fab fa-x-twitter" style={{ fontSize: '22px', color: '#000' }}></i>
+                <a href={selectedEvent["X"]} target="_blank" rel="noopener noreferrer" title="X (旧Twitter)" className="event-link social-link">
+                  <i className="fab fa-x-twitter"></i>
                 </a>
               )}
             </div>
-            <div className="event-detail-organizer">主催: {selectedEvent["主催者名"]}</div>
-            <div className="event-detail-tags">タグ: {selectedEvent["タグ"]}</div>
+            <div className="event-detail-section event-detail-organizer"><strong>主催:</strong> {selectedEvent["主催者名"]}</div>
+            {selectedEvent["タグ"] && (
+              <div className="event-detail-section event-detail-tags">
+                <strong>タグ:</strong>
+                <div className="tags-container">
+                  {(selectedEvent["タグ"] as string).split(/[,、\s]+/).map((tag, index) => (
+                    tag.trim() && <span key={index} className="tag-item">{tag.trim()}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="event-detail-images">
               {[1,2,3,4,5,6].map(n => {
                 const url = selectedEvent[`画像URL${n}` as keyof EventData] as string | undefined;
@@ -144,7 +194,7 @@ const Events: React.FC = () => {
               </div>
             )}
             {selectedEvent["緯度"] && selectedEvent["経度"] && (
-              <div className="event-detail-map" style={{width: '100%', height: '200px', marginTop: '16px'}}>
+              <div className="event-detail-map" style={{width: '100%', height: '250px', marginTop: '16px'}}>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${selectedEvent["緯度"]},${selectedEvent["経度"]}`}
                   target="_blank"
@@ -152,17 +202,15 @@ const Events: React.FC = () => {
                   className="event-route-link"
                   style={{ display: 'block', marginBottom: '8px', color: '#1976d2', fontWeight: 'bold', textDecoration: 'underline', textAlign: 'center' }}
                 >ここまでのルート</a>
-                <Map
-                  data={[{
-                    ...selectedEvent,
-                    緯度: selectedEvent["緯度"],
-                    経度: selectedEvent["経度"],
-                    index: selectedEvent.index
-                  }]}
-                  selectedShop={undefined}
-                  onSelectShop={() => {}}
-                  isEventMode={true}
-                />
+                <iframe
+                  width="100%"
+                  height="200"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={`https://www.google.com/maps?q=${selectedEvent["緯度"]},${selectedEvent["経度"]}&z=16&output=embed`}
+                  allowFullScreen
+                  title="イベント地図"
+                ></iframe>
               </div>
             )}
           </div>

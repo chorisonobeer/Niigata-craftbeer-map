@@ -7,6 +7,7 @@ a
 .app-body
 {
   height: calc(100% - 50px - env(safe-area-inset-bottom));
+  overflow-y: auto; /* コンテンツがはみ出した場合に縦スクロールを許可 */
 }
 // Hack for Edge to eliminate calc(env())
 @supports (-ms-ime-align: auto) {
