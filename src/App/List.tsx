@@ -150,7 +150,7 @@ const Content = (props: Props) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const navigate = useNavigate();
   const listRef = useRef<HTMLDivElement>(null);
-  const location = useContext(GeolocationContext);
+  const { location } = useContext(GeolocationContext);
 
   const [searchParams] = useSearchParams();
   const queryCategory = searchParams.get('category');

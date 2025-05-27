@@ -3,9 +3,9 @@ Full Path: /src/App/Home.tsx
 Last Modified: 2025-03-19 17:30:00
 */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import Map from './Map';
+import LazyMap from './LazyMap';
 import Shop from './Shop';
 import SearchFeature from './SearchFeature';
 import './Home.scss';
@@ -14,16 +14,18 @@ type HomeProps = {
   data: Pwamap.ShopData[];
 };
 
-const Home: React.FC<HomeProps> = (props) => {
+const Home: React.FC<HomeProps> = React.memo((props) => {
   const [selectedShop, setSelectedShop] = useState<Pwamap.ShopData | undefined>(undefined);
   const [filteredShops, setFilteredShops] = useState<Pwamap.ShopData[]>([]);
 
-  // 親コンポーネントからのデータを設定
+  // 親コンポーネントからのデータを設定（メモ化）
+  const memoizedData = useMemo(() => props.data, [props.data]);
+  
   useEffect(() => {
-    if (props.data.length > 0) {
-      setFilteredShops(props.data);
+    if (memoizedData.length > 0) {
+      setFilteredShops(memoizedData);
     }
-  }, [props.data]);
+  }, [memoizedData]);
 
   // 検索結果を受け取るハンドラ
   const handleSearchResults = useCallback((results: Pwamap.ShopData[]) => {
@@ -40,27 +42,41 @@ const Home: React.FC<HomeProps> = (props) => {
     setSelectedShop(undefined);
   }, []);
 
+  // メモ化されたコンポーネント
+  const searchFeature = useMemo(() => (
+    <SearchFeature 
+      data={memoizedData}
+      onSelectShop={handleSelectShop}
+      onSearchResults={handleSearchResults}
+    />
+  ), [memoizedData, handleSelectShop, handleSearchResults]);
+
+  const lazyMap = useMemo(() => (
+    <LazyMap 
+      data={filteredShops} 
+      selectedShop={selectedShop}
+      onSelectShop={handleSelectShop}
+      initialData={memoizedData}
+    />
+  ), [filteredShops, selectedShop, handleSelectShop, memoizedData]);
+
+  const shopModal = useMemo(() => {
+    if (!selectedShop) return null;
+    return ReactDOM.createPortal(
+      <Shop shop={selectedShop} close={handleCloseShop} />,
+      document.getElementById('modal-root') as HTMLElement
+    );
+  }, [selectedShop, handleCloseShop]);
+
   return (
     <div className="home">
-      <SearchFeature 
-        data={props.data}
-        onSelectShop={handleSelectShop}
-        onSearchResults={handleSearchResults}
-      />
-      <Map 
-        data={filteredShops} 
-        selectedShop={selectedShop}
-        onSelectShop={handleSelectShop}
-        initialData={props.data}
-      />
-      {selectedShop &&
-        ReactDOM.createPortal(
-          <Shop shop={selectedShop} close={handleCloseShop} />,
-          document.getElementById('modal-root') as HTMLElement
-        )
-      }
+      {searchFeature}
+      {lazyMap}
+      {shopModal}
     </div>
   );
-};
+});
+
+Home.displayName = 'Home';
 
 export default Home;

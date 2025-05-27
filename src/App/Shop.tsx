@@ -18,7 +18,7 @@ const Shop: React.FC<Props> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [localDistance, setLocalDistance] = useState<number | undefined>(props.shop.distance);
   const [isClosing, setIsClosing] = useState(false);
-  const currentPosition = useContext(GeolocationContext);
+  const { location: currentPosition } = useContext(GeolocationContext);
 
   // アニメーション用: マウント時に .slide-in クラスを付与して右側からスライドイン
   useEffect(() => {

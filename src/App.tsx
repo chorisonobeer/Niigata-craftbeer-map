@@ -3,37 +3,37 @@ Full Path: /src/App.tsx
 Last Modified: 2025-02-28 17:45:00
 */
 
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import "./App.scss";
-
-import Home from './App/Home';
-import List from './App/List';
-import AboutUs from './App/AboutUs';
-import Category from './App/Category';
-import Images from './App/Images';
-import Events from './App/Events';
-
-import Tabbar from './App/Tabbar';
-import config from "./config.json";
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Papa from 'papaparse';
 import { GeolocationProvider } from './context/GeolocationContext';
+import Home from './App/Home';
+import List from './App/List';
+import Category from './App/Category';
+import Images from './App/Images';
+import AboutUs from './App/AboutUs';
+import Events from './App/Events';
+import Tabbar from './App/Tabbar';
+import config from "./config.json";
+import './App.scss';
 
-const sortShopList = async (shopList: Pwamap.ShopData[]) => {
-  // 新着順にソート
-  return shopList.sort((item1, item2) => {
-    return Date.parse(item2['タイムスタンプ']) - Date.parse(item1['タイムスタンプ']);
-  });
-}
+const App: React.FC = React.memo(() => {
+  const [shopList, setShopList] = useState<Pwamap.ShopData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
-const App = () => {
-  const [shopList, setShopList] = React.useState<Pwamap.ShopData[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const sortShopList = useCallback((shopList: Pwamap.ShopData[]) => {
+    return new Promise<Pwamap.ShopData[]>((resolve) => {
+      const sortedList = shopList.sort((item1, item2) => {
+        return Date.parse(item2['タイムスタンプ']) - Date.parse(item1['タイムスタンプ']);
+      });
+      resolve(sortedList);
+    });
+  }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
-    setError(null);
+    setError("");
     const cacheKey = "shopListCache";
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
@@ -119,7 +119,19 @@ const App = () => {
         setError(e.message);
         setLoading(false);
       });
-  }, []);
+  }, [sortShopList]);
+
+  // メモ化されたルートコンポーネント
+  const routes = useMemo(() => (
+    <Routes>
+      <Route path="/" element={<Home data={shopList} />} />
+      <Route path="/list" element={<List data={shopList} />} />
+      <Route path="/category" element={<Category data={shopList} />} />
+      <Route path="/images" element={<Images data={shopList} />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/events" element={<Events />} />
+    </Routes>
+  ), [shopList]);
 
   if (loading) return <div className="app-loading">読み込み中...</div>;
   if (error) return <div className="app-error">{error}</div>;
@@ -128,14 +140,7 @@ const App = () => {
     <GeolocationProvider>
       <div className="app">
         <div className="app-body">
-          <Routes>
-            <Route path="/" element={<Home data={shopList} />} />
-            <Route path="/list" element={<List data={shopList} />} />
-            <Route path="/category" element={<Category data={shopList} />} />
-            <Route path="/images" element={<Images data={shopList} />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/events" element={<Events />} />
-          </Routes>
+          {routes}
         </div>
         <div id="modal-root"></div>
         <div className="app-footer">
@@ -144,6 +149,8 @@ const App = () => {
       </div>
     </GeolocationProvider>
   );
-}
+});
+
+App.displayName = 'App';
 
 export default App;
