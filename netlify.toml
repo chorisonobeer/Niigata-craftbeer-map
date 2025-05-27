@@ -9,8 +9,8 @@
 
 # プロダクション環境の設定
 [context.production]
-  # 環境変数（統合版）
-  environment = { NODE_VERSION = "20", NODE_ENV = "production" }
+  # 環境変数
+  environment = { NODE_VERSION = "20" }
 
 # リダイレクト設定 - SPAのためのフォールバック
 [[redirects]]
@@ -19,23 +19,19 @@
   status = 200
 
 # ============================================
-# キャッシュ最適化設定（基本版）
+# 基本的なキャッシュ最適化（CSP問題回避版）
 # ============================================
 
-# サービスワーカー - 絶対にキャッシュしない
+# サービスワーカー - キャッシュしない
 [[headers]]
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
 
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
 
 # JavaScriptファイル（ハッシュ付き）- 長期キャッシュ
 [[headers]]
@@ -43,7 +39,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# CSSファイル（ハッシュ付き）- 長期キャッシュ
+# CSSファイル（ハッシュ付き）- 長期キャッシュ  
 [[headers]]
   for = "/static/css/*.css"
   [headers.values]
@@ -55,45 +51,13 @@
   [headers.values]
     Cache-Control = "public, max-age=2592000"
 
-# PWAマニフェストファイル - 短期キャッシュ
-[[headers]]
-  for = "/manifest.json"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-    Content-Type = "application/manifest+json"
-
 # HTMLファイル - 常に最新版をチェック
 [[headers]]
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# メインのindex.html - SPAの場合特に重要
 [[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
-
-# ============================================
-# 基本的なセキュリティヘッダー
-# ============================================
-
-# 全体的なセキュリティヘッダー（最小限）
-[[headers]]
-  for = "/*"
-  [headers.values]
-    # 基本的なセキュリティ
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    # パフォーマンス最適化
-    Vary = "Accept-Encoding"
-
-# ============================================
-# 開発環境設定
-# ============================================
-
-[context.dev]
-  command = "npm run build"
-  
-[context.branch-deploy]
-  command = "npm run build"
