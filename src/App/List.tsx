@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, useContext } from "react";
 import ShopListItem from './ShopListItem';
 import Shop from './Shop';
 import './List.scss';
@@ -7,6 +7,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { askGeolocationPermission } from '../geolocation';
 import * as turf from "@turf/turf";
 import { useSwipeable } from "react-swipeable";
+import { GeolocationContext } from '../context/GeolocationContext';
 
 // スケルトンローディングコンポーネント
 const SkeletonItem = React.memo(() => (
@@ -89,8 +90,8 @@ const calculateDistancesInBatches = async (shops: Pwamap.ShopData[], position: n
   return [...cachedShops.filter(shop => typeof shop.distance === 'number'), ...results];
 };
 
-const sortShopList = async (shopList: Pwamap.ShopData[]): Promise<ShopDataWithDistance[]> => {
-  const cacheKey = `sorted-${shopList.length}`;
+const sortShopList = async (shopList: Pwamap.ShopData[], contextLocation?: [number, number] | null): Promise<ShopDataWithDistance[]> => {
+  const cacheKey = `sorted-${shopList.length}-${contextLocation ? contextLocation.join(',') : 'no-location'}`;
   const cachedData = dataCache.get(cacheKey);
   
   if (cachedData) {
@@ -98,7 +99,16 @@ const sortShopList = async (shopList: Pwamap.ShopData[]): Promise<ShopDataWithDi
   }
 
   let currentPosition;
-  if (positionCache && Date.now() - positionCache.timestamp < CACHE_DURATION) {
+  
+  // GeolocationContextの位置情報を優先使用
+  if (contextLocation) {
+    currentPosition = contextLocation;
+    // positionCacheも更新
+    positionCache = {
+      coords: { latitude: contextLocation[1], longitude: contextLocation[0] },
+      timestamp: Date.now()
+    };
+  } else if (positionCache && Date.now() - positionCache.timestamp < CACHE_DURATION) {
     currentPosition = [positionCache.coords.longitude, positionCache.coords.latitude];
   } else {
     const position = await askGeolocationPermission();
@@ -137,49 +147,76 @@ const Content = (props: Props) => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const navigate = useNavigate();
   const listRef = useRef<HTMLDivElement>(null);
+  const location = useContext(GeolocationContext);
 
   const [searchParams] = useSearchParams();
   const queryCategory = searchParams.get('category');
 
-  // 初期データの設定（即座に表示）
+  // 初期データの設定（距離計算完了まで適切にローディング表示）
   useEffect(() => {
-    const cacheKey = queryCategory ? `filtered-${queryCategory}` : 'all';
-    const cachedData = dataCache.get(cacheKey);
-    
-    if (cachedData) {
-      setData(cachedData);
-      setList(cachedData.slice(0, INITIAL_LOAD_SIZE));
-      return;
-    }
-
-    let filteredData = props.data;
-    
-    if (queryCategory) {
-      filteredData = props.data.filter((shop) => {
-        const shopCategories = shop['カテゴリ']
-          ? shop['カテゴリ'].split(/,|、|\s+/).map(cat => cat.trim())
-          : [];
-        return shopCategories.includes(queryCategory);
-      });
-    }
-    
-    dataCache.set(cacheKey, filteredData);
-    setList(filteredData.slice(0, INITIAL_LOAD_SIZE));
-    
-    if (process.env.REACT_APP_ORDERBY === 'distance') {
-      setIsSorting(true);
-      sortShopList(filteredData)
-        .then(sortedData => {
+    const initializeData = async () => {
+      setIsInitializing(true);
+      
+      const cacheKey = queryCategory ? `filtered-${queryCategory}` : 'all';
+      const sortedCacheKey = `sorted-${queryCategory ? `filtered-${queryCategory}` : 'all'}-${location ? location.join(',') : 'no-location'}`;
+      
+      // 距離計算済みデータがキャッシュにある場合は即座に表示
+      const cachedSortedData = dataCache.get(sortedCacheKey);
+      if (cachedSortedData && process.env.REACT_APP_ORDERBY === 'distance') {
+        setData(cachedSortedData);
+        setList(cachedSortedData.slice(0, INITIAL_LOAD_SIZE));
+        setIsInitializing(false);
+        return;
+      }
+      
+      // フィルタリング済みデータのキャッシュ確認
+      const cachedData = dataCache.get(cacheKey);
+      let filteredData;
+      
+      if (cachedData) {
+        filteredData = cachedData;
+      } else {
+        filteredData = props.data;
+        
+        if (queryCategory) {
+          filteredData = props.data.filter((shop) => {
+            const shopCategories = shop['カテゴリ']
+              ? shop['カテゴリ'].split(/,|、|\s+/).map(cat => cat.trim())
+              : [];
+            return shopCategories.includes(queryCategory);
+          });
+        }
+        
+        dataCache.set(cacheKey, filteredData);
+      }
+      
+      if (process.env.REACT_APP_ORDERBY === 'distance') {
+        setIsSorting(true);
+        try {
+          const sortedData = await sortShopList(filteredData, location);
           setData(sortedData);
           setList(sortedData.slice(0, INITIAL_LOAD_SIZE));
-        })
-        .finally(() => setIsSorting(false));
-    } else {
-      setData(filteredData);
-    }
-  }, [props.data, queryCategory]);
+        } catch (error) {
+          console.warn('距離ソートに失敗しました:', error);
+          // 距離ソート失敗時は元データを表示
+          setData(filteredData);
+          setList(filteredData.slice(0, INITIAL_LOAD_SIZE));
+        } finally {
+          setIsSorting(false);
+        }
+      } else {
+        setData(filteredData);
+        setList(filteredData.slice(0, INITIAL_LOAD_SIZE));
+      }
+      
+      setIsInitializing(false);
+    };
+    
+    initializeData();
+  }, [props.data, queryCategory, location]);
 
   const popupHandler = useCallback((shop: Pwamap.ShopData) => {
     if (shop) {
@@ -238,7 +275,7 @@ const Content = (props: Props) => {
         scrollableTarget="shop-list"
         scrollThreshold={0.8}
       >
-        {list.length === 0 ? skeletonLoader : 
+        {(isInitializing || (list.length === 0 && isSorting)) ? skeletonLoader : 
           list.map((item) => (
             <div key={item.index} className="shop">
               <ShopListItem

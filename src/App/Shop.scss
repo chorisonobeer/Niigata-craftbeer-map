@@ -74,7 +74,7 @@ Last Modified: 2025-02-28 16:50:00
   .shop-title {
     font-size: 1.4rem;
     word-break: break-all;
-    margin-bottom: 8px;
+    margin-bottom: 24px;
   }
 
   /* カテゴリ & 距離を同じ高さ・同じ行で完璧に揃える */
@@ -83,6 +83,7 @@ Last Modified: 2025-02-28 16:50:00
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
+    margin-top: 10px;
   }
 
   /* 
@@ -252,9 +253,25 @@ Last Modified: 2025-02-28 16:50:00
   
   /* モバイル向けのスタイル調整 */
   @media (max-width: 480px) {
-    .shop-images-grid {
-      grid-template-columns: 1fr;
+    .shop-title {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
     }
+    .tag-box {
+      gap: 6px;
+      margin-bottom: 6px;
+      margin-top: 4px;
+    }
+    .category, .distance {
+      font-size: 0.7rem;
+      padding: 3px 6px;
+    }
+    .shop-info-box .info-item {
+      font-size: 0.8rem;
+    }
+  }
+  .shop-images-grid {
+    grid-template-columns: 1fr;
   }
 }
 

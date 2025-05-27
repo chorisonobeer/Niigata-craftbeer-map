@@ -2,7 +2,8 @@
 {
   padding: 0;
   margin: 0;
-  font-family: 'Hiragino Kaku Gothic Pro','ヒラギノ角ゴ Pro W3','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif;
+  @import "@fontsource/biz-udpgothic/index.css";
+  font-family: 'BIZ UDPGothic', sans-serif;
   font-size: 16px;
 }
 
@@ -42,7 +43,7 @@ html, body, #root
   text-align: center;
   .logo
   {
-    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'BIZ UDPGothic', sans-serif;
     font-size: 72px;
     max-width: 280px;
     line-height: 0.9;

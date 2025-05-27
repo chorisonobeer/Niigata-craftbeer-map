@@ -28,6 +28,9 @@ const Content = (props: Props) => {
 
   return (
     <div className="shop-link">
+      {props.data['エリア'] && (
+        <div className="area-badge">{props.data['エリア']}</div>
+      )}
       <h2 className="shop-title" style={{ wordBreak: "break-all" }} onClick={clickHandler}>
         {props.data['スポット名']}
       </h2>

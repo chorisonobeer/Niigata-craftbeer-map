@@ -172,13 +172,15 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
     }
     const lat = parseFloat(props.selectedShop['緯度']);
     const lng = parseFloat(props.selectedShop['経度']);
-    if (lat && lng) {
-      mapObject.flyTo({
-        center: [lng, lat],
-        zoom: 17,
-        essential: true
-      });
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+      // 緯度・経度が不正な場合は地図移動をスキップ
+      return;
     }
+    mapObject.flyTo({
+      center: [lng, lat],
+      zoom: 17,
+      essential: true
+    });
   }, [mapObject, props.selectedShop]);
 
   useEffect(() => {

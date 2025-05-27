@@ -1,7 +1,7 @@
 /** 
  * /src/App/Events.tsx
  * 2025-05-02T10:00+09:00
- * 変更概要: 新規追加 - イベント一覧・詳細ページ
+ * 変更概要: イベント情報のsessionStorageキャッシュ機構を追加
  */
 
 import React, { useEffect, useState } from "react";
@@ -20,6 +20,66 @@ const Events: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
+    // sessionStorageキャッシュ確認
+    const cacheKey = "eventListCache";
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setEventList(parsed);
+        setLoading(false);
+        // バックグラウンドで最新データ取得
+        fetch(config.event_data_url)
+          .then((response) => {
+            if (!response.ok) throw new Error("イベントデータの取得に失敗しました");
+            return response.text();
+          })
+          .then((csv) => {
+            Papa.parse(csv, {
+              header: true,
+              dynamicTyping: true,
+              complete: (results) => {
+                const features = results.data as EventData[];
+                const nextEventList: EventData[] = [];
+                const urlKeys: (keyof EventData)[] = ["公式サイト", "Instagram", "Facebook", "X"];
+                for (let i = 0; i < features.length; i++) {
+                  const feature = { ...features[i] };
+                  if (!feature["イベント名"] || !feature["開催期間"]) continue;
+                  urlKeys.forEach(key => {
+                    let value = feature[key] as string | undefined;
+                    if (value && typeof value === 'string') {
+                      value = value.trim();
+                      if (value.startsWith('"') && value.endsWith('"')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      if (value.startsWith("'") && value.endsWith("'")) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      if (value.startsWith('`') && value.endsWith('`')) {
+                        value = value.substring(1, value.length - 1);
+                      }
+                      (feature[key] as string) = value.trim();
+                    }
+                  });
+                  const event = { index: i, ...feature };
+                  nextEventList.push(event);
+                }
+                // 差分があればキャッシュ・state更新
+                if (JSON.stringify(parsed) !== JSON.stringify(nextEventList)) {
+                  setEventList(nextEventList);
+                  sessionStorage.setItem(cacheKey, JSON.stringify(nextEventList));
+                }
+              },
+              error: () => {},
+            });
+          })
+          .catch(() => {});
+        return;
+      } catch (e) {
+        // パース失敗時は通常フロー
+      }
+    }
+    // キャッシュなし時は通常取得
     fetch(config.event_data_url)
       .then((response) => {
         if (!response.ok) throw new Error("イベントデータの取得に失敗しました");
@@ -31,41 +91,32 @@ const Events: React.FC = () => {
           dynamicTyping: true,
           complete: (results) => {
             const features = results.data as EventData[];
-            console.log("Parsed CSV data (before trim):", JSON.parse(JSON.stringify(features))); // ★変更：クレンジング前のデータを確認するためディープコピーしてログ出力
             const nextEventList: EventData[] = [];
-            const urlKeys: (keyof EventData)[] = ["公式サイト", "Instagram", "Facebook", "X"]; // URLが含まれる可能性のあるキー
-
+            const urlKeys: (keyof EventData)[] = ["公式サイト", "Instagram", "Facebook", "X"];
             for (let i = 0; i < features.length; i++) {
-              const feature = { ...features[i] }; // featureをコピーして変更
+              const feature = { ...features[i] };
               if (!feature["イベント名"] || !feature["開催期間"]) continue;
-
-              // URLクレンジング処理
               urlKeys.forEach(key => {
                 let value = feature[key] as string | undefined;
                 if (value && typeof value === 'string') {
-                  // まず前後の空白を除去
                   value = value.trim();
-                  // 次に、文字列の最初と最後がダブルクォートであれば除去
                   if (value.startsWith('"') && value.endsWith('"')) {
                     value = value.substring(1, value.length - 1);
                   }
-                  // さらに、文字列の最初と最後がシングルクォートであれば除去
                   if (value.startsWith("'") && value.endsWith("'")) {
                     value = value.substring(1, value.length - 1);
                   }
-                  // さらに、文字列の最初と最後がバッククォートであれば除去
                   if (value.startsWith('`') && value.endsWith('`')) {
                     value = value.substring(1, value.length - 1);
                   }
-                  (feature[key] as string) = value.trim(); // 最後に再度トリム
+                  (feature[key] as string) = value.trim();
                 }
               });
-
               const event = { index: i, ...feature };
               nextEventList.push(event);
             }
-            console.log("Parsed CSV data (after trim):", nextEventList); // ★追加：クレンジング後のデータを確認
             setEventList(nextEventList);
+            sessionStorage.setItem(cacheKey, JSON.stringify(nextEventList));
             setLoading(false);
           },
           error: () => {
