@@ -17,3 +17,189 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ============================================
+# キャッシュ最適化設定（優先度順に記載）
+# ============================================
+
+# サービスワーカー - 絶対にキャッシュしない（最優先）
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# ソースマップファイル - セキュリティ強化
+[[headers]]
+  for = "/static/js/*.map"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/static/css/*.map"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Robots-Tag = "noindex, nofollow"
+
+# PWAマニフェストファイル - 短期キャッシュ
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+    Content-Type = "application/manifest+json"
+
+# PWAアイコンファイル - 長期キャッシュ
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/apple-icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# JavaScriptファイル（ハッシュ付き）- 長期キャッシュ
+[[headers]]
+  for = "/static/js/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# CSSファイル（ハッシュ付き）- 長期キャッシュ
+[[headers]]
+  for = "/static/css/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# フォントファイル - 長期キャッシュ（BIZ UDPゴシック対応）
+[[headers]]
+  for = "/static/media/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/static/media/*.woff"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/static/media/*.ttf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# 画像ファイル - 中期キャッシュ（地図アプリ用最適化）
+[[headers]]
+  for = "/static/media/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+    Content-Type = "image/jpeg"
+
+[[headers]]
+  for = "/static/media/*.jpeg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+    Content-Type = "image/jpeg"
+
+[[headers]]
+  for = "/static/media/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+    Content-Type = "image/png"
+
+[[headers]]
+  for = "/static/media/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+    Content-Type = "image/webp"
+
+[[headers]]
+  for = "/static/media/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+    Content-Type = "image/svg+xml"
+
+# その他の静的ファイル
+[[headers]]
+  for = "/static/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+# APIエンドポイント - キャッシュしない
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# HTMLファイル - 常に最新版をチェック（index.html以外）
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# メインのindex.html - PWA対応強化
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    # PWA必須ヘッダー
+    X-UA-Compatible = "IE=edge"
+
+# ============================================
+# セキュリティとパフォーマンス強化設定
+# ============================================
+
+# 全体的なセキュリティヘッダー強化
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # セキュリティヘッダー
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Content Security Policy（基本設定）
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;"
+    # パフォーマンス最適化
+    X-DNS-Prefetch-Control = "on"
+    # PWA関連
+    X-UA-Compatible = "IE=edge"
+    # キャッシュバスティング
+    Vary = "Accept-Encoding"
+
+# ============================================
+# PWA最適化設定
+# ============================================
+
+# HTTPS強制（本番環境）
+[context.production.environment]
+  NODE_ENV = "production"
+  HTTPS = "true"
+
+# ============================================
+# 開発環境設定
+# ============================================
+
+[context.dev]
+  command = "npm run build"
+  
+[context.branch-deploy]
+  command = "npm run build"
