@@ -9,8 +9,8 @@
 
 # プロダクション環境の設定
 [context.production]
-  # 環境変数
-  environment = { NODE_VERSION = "20" }
+  # 環境変数（統合版）
+  environment = { NODE_VERSION = "20", NODE_ENV = "production", HTTPS = "true" }
 
 # リダイレクト設定 - SPAのためのフォールバック
 [[redirects]]
@@ -184,15 +184,6 @@
     X-UA-Compatible = "IE=edge"
     # キャッシュバスティング
     Vary = "Accept-Encoding"
-
-# ============================================
-# PWA最適化設定
-# ============================================
-
-# HTTPS強制（本番環境）
-[context.production.environment]
-  NODE_ENV = "production"
-  HTTPS = "true"
 
 # ============================================
 # 開発環境設定
