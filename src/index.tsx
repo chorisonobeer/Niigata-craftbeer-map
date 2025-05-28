@@ -19,4 +19,16 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-serviceWorkerRegistration.register();
+// Service Worker登録時に更新があれば即座に適用
+serviceWorkerRegistration.register({
+  onUpdate: (registration) => {
+    // 新しいService Workerが利用可能になったら即座に更新
+    if (registration && registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    }
+  },
+  onSuccess: (registration) => {
+    console.log('Service Worker registered successfully');
+  }
+});

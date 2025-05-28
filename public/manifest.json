@@ -1,6 +1,7 @@
 {
-  "short_name": "Geolonia PWA",
-  "name": "Geolonia PWA",
+  "short_name": "Niigata Craftbeer Map",
+  "name": "新潟クラフトビールマップ",
+  "version": "1.0.0",
   "icons": [
     {
       "src": "manifest-icon-192.maskable.png",
