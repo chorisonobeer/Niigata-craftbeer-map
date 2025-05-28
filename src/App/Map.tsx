@@ -4,7 +4,7 @@
  * 変更概要: Props型をShopData/EventData両対応に統一し、型エラー修正
  */
 
-import React, { useCallback, useState, useEffect, useContext } from "react";
+import React, { useCallback, useState, useEffect, useContext, useRef } from "react";
 // @ts-ignore
 import geojsonExtent from '@mapbox/geojson-extent';
 import toGeoJson from './toGeoJson';
@@ -155,18 +155,31 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
     updateMarkers(mapObject, props.data);
   }, [mapObject, props.data, updateMarkers]);
 
+  // 前回のデータ長を記録するためのref
+  const prevDataLengthRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (!mapObject || props.data.length === 0 || location) {
-      return; // 現在地がある場合はfitBoundsをスキップ
+    if (!mapObject || props.data.length === 0) {
+      return;
     }
-    const geojson = toGeoJson(props.data);
-    const bounds = geojsonExtent(geojson);
-    if (bounds) {
-      mapObject.fitBounds(bounds, {
-        padding: 50
-      });
+    
+    // データ長が変化した場合、または位置情報がない場合は自動ズーム
+    const dataLengthChanged = prevDataLengthRef.current !== null && prevDataLengthRef.current !== props.data.length;
+    const isFiltered = props.initialData && props.data.length !== props.initialData.length;
+    
+    if (dataLengthChanged || isFiltered || !location) {
+      const geojson = toGeoJson(props.data);
+      const bounds = geojsonExtent(geojson);
+      if (bounds) {
+        mapObject.fitBounds(bounds, {
+          padding: 50
+        });
+      }
     }
-  }, [mapObject, props.data, location]);
+    
+    // 現在のデータ長を記録
+    prevDataLengthRef.current = props.data.length;
+  }, [mapObject, props.data, location, props.initialData]);
 
   useEffect(() => {
     if (!mapObject || !props.selectedShop) {

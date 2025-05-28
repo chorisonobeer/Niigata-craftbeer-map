@@ -183,12 +183,34 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     setShowCategoryDropdown(false);
+    
+    // 「すべて」選択時は全てのフィルター条件をリセット
+    if (category === '') {
+      setSelectedArea('');
+      setIsOpenNow(false);
+      setHasParking(false);
+      setQuery('');
+      setShowResults(false);
+      // 全データを表示するためにonSearchResultsを呼び出し
+      onSearchResults(data);
+    }
   };
 
   // エリア選択ハンドラー
   const handleAreaSelect = (area: string) => {
     setSelectedArea(area);
     setShowAreaDropdown(false);
+    
+    // 「すべて」選択時は全てのフィルター条件をリセット
+    if (area === '') {
+      setSelectedCategory('');
+      setIsOpenNow(false);
+      setHasParking(false);
+      setQuery('');
+      setShowResults(false);
+      // 全データを表示するためにonSearchResultsを呼び出し
+      onSearchResults(data);
+    }
   };
 
   // 結果アイテムクリックハンドラー
@@ -228,7 +250,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
           {/* カテゴリドロップダウン */}
           <div className="filter-item category-filter" ref={categoryDropdownRef}>
             <div 
-              className={`custom-dropdown-header ${selectedCategory ? 'active' : ''}`}
+              className={`custom-dropdown-header ${selectedCategory !== '' ? 'active' : ''}`}
               onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             >
               {selectedCategory === '' ? 'カテゴリ' : selectedCategory}
@@ -258,7 +280,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
           {/* エリアドロップダウン */}
           <div className="filter-item area-filter" ref={areaDropdownRef}>
             <div 
-              className={`custom-dropdown-header ${selectedArea ? 'active' : ''}`}
+              className={`custom-dropdown-header ${selectedArea !== '' ? 'active' : ''}`}
               onClick={() => setShowAreaDropdown(!showAreaDropdown)}
             >
               {selectedArea === '' ? 'エリア' : selectedArea}
