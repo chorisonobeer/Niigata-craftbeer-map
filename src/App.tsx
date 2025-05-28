@@ -158,7 +158,7 @@ const App: React.FC = React.memo(() => {
           left: 0,
           width: '100%',
           height: 'calc(100% - 50px)',
-          zIndex: isHomePage ? 1 : -1,
+          zIndex: isHomePage ? 5 : -1,
           pointerEvents: isHomePage ? 'auto' : 'none'
         }}
       />
