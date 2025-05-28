@@ -7,27 +7,43 @@
 import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import config from "../config.json";
+import LoadingSpinner from "./LoadingSpinner";
 import "./Events.scss";
 
 type EventData = Pwamap.EventData;
 
 const Events: React.FC = () => {
-  const [eventList, setEventList] = useState<EventData[]>([]);
+  // sessionStorageキャッシュを同期的にチェックして初期状態を設定
+  const getCachedData = () => {
+    try {
+      const cached = sessionStorage.getItem("eventListCache");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const [eventList, setEventList] = useState<EventData[]>(() => getCachedData());
   const [selectedEvent, setSelectedEvent] = useState<EventData | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(() => {
+    // キャッシュがある場合は初期ローディングをスキップ
+    const cached = sessionStorage.getItem("eventListCache");
+    return !cached;
+  });
   const [error, setError] = useState<string | null>(null);
   const [imageModalUrl, setImageModalUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
     // sessionStorageキャッシュ確認
     const cacheKey = "eventListCache";
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        setEventList(parsed);
-        setLoading(false);
+        // キャッシュがある場合はローディング状態を即座に解除
+        if (loading) {
+          setLoading(false);
+        }
         // バックグラウンドで最新データ取得
         fetch(config.event_data_url)
           .then((response) => {
@@ -79,7 +95,7 @@ const Events: React.FC = () => {
         // パース失敗時は通常フロー
       }
     }
-    // キャッシュなし時は通常取得
+    // キャッシュなし時は通常取得（loadingは既にtrueに設定済み）
     fetch(config.event_data_url)
       .then((response) => {
         if (!response.ok) throw new Error("イベントデータの取得に失敗しました");
@@ -139,7 +155,7 @@ const Events: React.FC = () => {
     setSelectedEvent(undefined);
   };
 
-  if (loading) return <div className="events-loading">読み込み中...</div>;
+  if (loading) return <LoadingSpinner variant="circular" size="md" text="イベント情報を読み込み中..." />;
   if (error) return <div className="events-error">{error}</div>;
 
   return (

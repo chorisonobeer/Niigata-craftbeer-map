@@ -15,6 +15,7 @@ import AboutUs from './App/AboutUs';
 import Events from './App/Events';
 import Tabbar from './App/Tabbar';
 import LazyMap from './App/LazyMap';
+import LoadingSpinner from './App/LoadingSpinner';
 import config from "./config.json";
 import './App.scss';
 
@@ -184,7 +185,7 @@ const App: React.FC = React.memo(() => {
     </Routes>
   ), [shopList, selectedShop, handleSelectShop, handleSearchResults]);
 
-  if (loading) return <div className="app-loading">読み込み中...</div>;
+  if (loading) return <LoadingSpinner variant="dots" size="lg" text="アプリを初期化中..." />;
   if (error) return <div className="app-error">{error}</div>;
 
   return (

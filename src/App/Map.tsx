@@ -10,6 +10,7 @@ import geojsonExtent from '@mapbox/geojson-extent';
 import toGeoJson from './toGeoJson';
 import setCluster from './setCluster';
 import { GeolocationContext } from '../context/GeolocationContext';
+import LoadingSpinner from './LoadingSpinner';
 
 // 共通プロパティ型
 export type MapPointBase = {
@@ -37,17 +38,7 @@ const CSS: React.CSSProperties = {
   position: 'relative',
 };
 
-const LOADER_STYLE: React.CSSProperties = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  background: 'rgba(255, 255, 255, 0.7)',
-  padding: '5px 10px',
-  borderRadius: '4px',
-  fontSize: '12px',
-  zIndex: 1,
-};
+
 
 const hidePoiLayers = (map: any) => {
   const hideLayers = [
@@ -255,7 +246,11 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
 
   return (
     <div style={CSS}>
-      {isLoadingMarkers && <div style={LOADER_STYLE}>マーカーを読み込み中...</div>}
+      {isLoadingMarkers && (
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}>
+          <LoadingSpinner variant="pulse" size="sm" text="マーカーを読み込み中..." />
+        </div>
+      )}
       <div
         ref={mapNode}
         style={CSS}
