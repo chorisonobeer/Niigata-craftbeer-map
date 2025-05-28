@@ -6,7 +6,8 @@
 import React, { useEffect, useState } from 'react';
 import './AboutUs.scss';
 import config from '../config.json';
-import { FaPlus, FaBeer, FaMapMarkedAlt, FaSearch, FaCamera } from 'react-icons/fa';
+import { FaPlus, FaBeer, FaMapMarkedAlt, FaSearch, FaCamera, FaInfoCircle } from 'react-icons/fa';
+import { getVersionDisplayString, getDetailedVersionString, getStoredVersion } from '../utils/version';
 
 // スポンサー企業情報の型定義
 type Sponsor = {
@@ -27,6 +28,7 @@ const sponsors: Sponsor[] = [
 
 const Content = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showVersionInfo, setShowVersionInfo] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +58,13 @@ const Content = () => {
 
       <div className="container">
         <div className="content-card">
-          <h2 className="section-title">このマップについて</h2>
+          <h2 
+            className="section-title clickable-title" 
+            onClick={() => setShowVersionInfo(!showVersionInfo)}
+            title="クリックでアプリ情報を表示"
+          >
+            このマップについて
+          </h2>
           <p>
             「NIIGATA CRAFT BEER MAP」は、新潟県内のクラフトビールが飲めるお店・買えるお店を一目で探せるデジタルマップです。<br />
             新潟の豊かな自然と職人の情熱が生み出すクラフトビールの魅力を、もっと多くの人に知ってほしい。<br />
@@ -142,6 +150,43 @@ const Content = () => {
             </div>
           </div>
         ) : null}
+
+        {showVersionInfo && (
+          <div className="version-modal-overlay" onClick={() => setShowVersionInfo(false)}>
+            <div className="version-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="version-modal-header">
+                <h2 className="section-title">
+                  <FaInfoCircle className="section-icon" />
+                  アプリ情報
+                </h2>
+                <button 
+                  className="version-modal-close" 
+                  onClick={() => setShowVersionInfo(false)}
+                  aria-label="閉じる"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="version-details">
+                <div className="version-item">
+                  <span className="version-label">現在のバージョン:</span>
+                  <span className="version-value">{getVersionDisplayString()}</span>
+                </div>
+                <div className="version-item">
+                  <span className="version-label">詳細情報:</span>
+                  <span className="version-value">{getDetailedVersionString()}</span>
+                </div>
+                <div className="version-item">
+                  <span className="version-label">インストール済み:</span>
+                  <span className="version-value">{getStoredVersion() || 'なし'}</span>
+                </div>
+              </div>
+              <p className="version-note">
+                アプリが更新された場合、自動的にキャッシュがクリアされ最新版が適用されます。
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

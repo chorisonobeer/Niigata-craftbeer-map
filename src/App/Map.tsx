@@ -4,11 +4,12 @@
  * 変更概要: Props型をShopData/EventData両対応に統一し、型エラー修正
  */
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useContext } from "react";
 // @ts-ignore
 import geojsonExtent from '@mapbox/geojson-extent';
 import toGeoJson from './toGeoJson';
 import setCluster from './setCluster';
+import { GeolocationContext } from '../context/GeolocationContext';
 
 // 共通プロパティ型
 export type MapPointBase = {
@@ -67,6 +68,7 @@ const hidePoiLayers = (map: any) => {
 
 function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
   const { onSelectShop } = props;
+  const { location } = useContext(GeolocationContext);
   const mapNode = React.useRef<HTMLDivElement>(null);
   const [mapObject, setMapObject] = React.useState<any>();
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
@@ -154,8 +156,8 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
   }, [mapObject, props.data, updateMarkers]);
 
   useEffect(() => {
-    if (!mapObject || props.data.length === 0) {
-      return;
+    if (!mapObject || props.data.length === 0 || location) {
+      return; // 現在地がある場合はfitBoundsをスキップ
     }
     const geojson = toGeoJson(props.data);
     const bounds = geojsonExtent(geojson);
@@ -164,7 +166,7 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
         padding: 50
       });
     }
-  }, [mapObject, props.data]);
+  }, [mapObject, props.data, location]);
 
   useEffect(() => {
     if (!mapObject || !props.selectedShop) {
@@ -189,11 +191,16 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
     }
     // @ts-ignore
     const { geolonia } = window;
+    
+    // GeolocationContextから位置情報を取得して初期位置を決定
+    const initialCenter = location || NIIGATA_CENTER;
+    const initialZoom = location ? 15 : DEFAULT_ZOOM;
+    
     const map = new geolonia.Map({
       container: mapNode.current,
       style: 'geolonia/basic',
-      center: NIIGATA_CENTER,
-      zoom: DEFAULT_ZOOM,
+      center: initialCenter,
+      zoom: initialZoom,
       interactive: true,
       trackResize: true,
     });
@@ -211,9 +218,10 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
           showUserLocation: true
         });
         map.addControl(geolocateControl, 'top-right');
-        setTimeout(() => {
-          geolocateControl.trigger();
-        }, 100);
+        // 自動トリガーを削除（手動操作のみに変更）
+        // setTimeout(() => {
+        //   geolocateControl.trigger();
+        // }, 100);
         geolocateControl.on('error', () => {
           console.warn('位置情報の取得に失敗しましたが、地図は使用できます');
         });
@@ -230,7 +238,7 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
       window.removeEventListener('orientationchange', orientationChangeHandler);
       map.off('load', onMapLoad);
     };
-  }, [mapObject]);
+  }, [mapObject, location]);
 
   return (
     <div style={CSS}>

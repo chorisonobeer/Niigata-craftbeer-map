@@ -2,8 +2,8 @@
 (function() {
   'use strict';
   
-  // 現在のタイムスタンプをバージョンとして使用
-  const currentVersion = new Date().getTime();
+  // 固定バージョン番号を使用（アプリ更新時に手動で変更）
+  const currentVersion = '1.0.0';
   const versionKey = 'app_version';
   const lastVersion = localStorage.getItem(versionKey);
   

@@ -28,14 +28,7 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <title>%REACT_APP_TITLE%</title>
     <!-- バージョンチェック用スクリプト（キャッシュ問題解決） -->
-    <script>
-      // バージョンチェックスクリプトを動的に読み込み
-      (function() {
-        var script = document.createElement('script');
-        script.src = '%PUBLIC_URL%/version-check.js?v=' + new Date().getTime();
-        document.head.appendChild(script);
-      })();
-    </script>
+    <script src="%PUBLIC_URL%/version-check.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" type="image/png" sizes="196x196" href="favicon-196.png">
     <link rel="apple-touch-icon" href="apple-icon-180.png">
