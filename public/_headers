@@ -19,6 +19,11 @@
   Expires: 0
 
 # その他のファイル
+# OGP画像のキャッシュ制御
+/ogp.jpg
+  Cache-Control: public, max-age=3600, must-revalidate
+  X-Content-Type-Options: nosniff
+
 /*
   X-Frame-Options: DENY
   X-XSS-Protection: 1; mode=block

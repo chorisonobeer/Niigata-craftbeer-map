@@ -145,7 +145,7 @@ const Events: React.FC = () => {
         setError(e.message);
         setLoading(false);
       });
-  }, []);
+  }, [loading]);
 
   const showEventDetail = (event: EventData) => {
     setSelectedEvent(event);
