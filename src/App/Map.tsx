@@ -218,10 +218,10 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
           showUserLocation: true
         });
         map.addControl(geolocateControl, 'top-right');
-        // 自動トリガーを削除（手動操作のみに変更）
-        // setTimeout(() => {
-        //   geolocateControl.trigger();
-        // }, 100);
+        // 現在地を自動取得
+        setTimeout(() => {
+          geolocateControl.trigger();
+        }, 100);
         geolocateControl.on('error', () => {
           console.warn('位置情報の取得に失敗しましたが、地図は使用できます');
         });

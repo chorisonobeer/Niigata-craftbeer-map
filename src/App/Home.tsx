@@ -3,62 +3,38 @@ Full Path: /src/App/Home.tsx
 Last Modified: 2025-03-19 17:30:00
 */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import LazyMap from './LazyMap';
 import Shop from './Shop';
 import SearchFeature from './SearchFeature';
 import './Home.scss';
 
 type HomeProps = {
   data: Pwamap.ShopData[];
+  selectedShop?: Pwamap.ShopData;
+  onSelectShop: (shop: Pwamap.ShopData) => void;
+  onSearchResults: (results: Pwamap.ShopData[]) => void;
 };
 
 const Home: React.FC<HomeProps> = React.memo((props) => {
-  const [selectedShop, setSelectedShop] = useState<Pwamap.ShopData | undefined>(undefined);
-  const [filteredShops, setFilteredShops] = useState<Pwamap.ShopData[]>([]);
+  const { data, selectedShop, onSelectShop, onSearchResults } = props;
 
   // 親コンポーネントからのデータを設定（メモ化）
-  const memoizedData = useMemo(() => props.data, [props.data]);
-  
-  useEffect(() => {
-    if (memoizedData.length > 0) {
-      setFilteredShops(memoizedData);
-    }
-  }, [memoizedData]);
-
-  // 検索結果を受け取るハンドラ
-  const handleSearchResults = useCallback((results: Pwamap.ShopData[]) => {
-    setFilteredShops(results);
-  }, []);
-
-  // 店舗選択ハンドラ
-  const handleSelectShop = useCallback((shop: Pwamap.ShopData) => {
-    setSelectedShop(shop);
-  }, []);
+  const memoizedData = useMemo(() => data, [data]);
 
   // Shop閉じる処理
   const handleCloseShop = useCallback(() => {
-    setSelectedShop(undefined);
-  }, []);
+    onSelectShop(undefined as any);
+  }, [onSelectShop]);
 
   // メモ化されたコンポーネント
   const searchFeature = useMemo(() => (
     <SearchFeature 
       data={memoizedData}
-      onSelectShop={handleSelectShop}
-      onSearchResults={handleSearchResults}
+      onSelectShop={onSelectShop}
+      onSearchResults={onSearchResults}
     />
-  ), [memoizedData, handleSelectShop, handleSearchResults]);
-
-  const lazyMap = useMemo(() => (
-    <LazyMap 
-      data={filteredShops} 
-      selectedShop={selectedShop}
-      onSelectShop={handleSelectShop}
-      initialData={memoizedData}
-    />
-  ), [filteredShops, selectedShop, handleSelectShop, memoizedData]);
+  ), [memoizedData, onSelectShop, onSearchResults]);
 
   const shopModal = useMemo(() => {
     if (!selectedShop) return null;
@@ -71,7 +47,6 @@ const Home: React.FC<HomeProps> = React.memo((props) => {
   return (
     <div className="home">
       {searchFeature}
-      {lazyMap}
       {shopModal}
     </div>
   );

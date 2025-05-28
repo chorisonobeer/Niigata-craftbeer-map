@@ -24,11 +24,14 @@ const MapSkeleton: React.FC = () => (
 );
 
 // 遅延読み込み対応のMapコンポーネント
-function LazyMap<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
+function LazyMap<T extends MapPointBase = MapPointBase>(props: MapProps<T> & { style?: React.CSSProperties }) {
+  const { style, ...mapProps } = props;
   return (
-    <Suspense fallback={<MapSkeleton />}>
-      <Map {...props} />
-    </Suspense>
+    <div style={style}>
+      <Suspense fallback={<MapSkeleton />}>
+        <Map {...mapProps} />
+      </Suspense>
+    </div>
   );
 }
 

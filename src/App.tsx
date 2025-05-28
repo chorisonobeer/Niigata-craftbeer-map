@@ -4,7 +4,7 @@ Last Modified: 2025-02-28 17:45:00
 */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Papa from 'papaparse';
 import { GeolocationProvider } from './context/GeolocationContext';
 import Home from './App/Home';
@@ -14,6 +14,7 @@ import Images from './App/Images';
 import AboutUs from './App/AboutUs';
 import Events from './App/Events';
 import Tabbar from './App/Tabbar';
+import LazyMap from './App/LazyMap';
 import config from "./config.json";
 import './App.scss';
 
@@ -21,6 +22,9 @@ const App: React.FC = React.memo(() => {
   const [shopList, setShopList] = useState<Pwamap.ShopData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [selectedShop, setSelectedShop] = useState<Pwamap.ShopData | undefined>(undefined);
+  const [filteredShops, setFilteredShops] = useState<Pwamap.ShopData[]>([]);
+  const location = useLocation();
 
   const sortShopList = useCallback((shopList: Pwamap.ShopData[]) => {
     return new Promise<Pwamap.ShopData[]>((resolve) => {
@@ -121,17 +125,64 @@ const App: React.FC = React.memo(() => {
       });
   }, [sortShopList]);
 
+  // 店舗選択ハンドラ
+  const handleSelectShop = useCallback((shop: Pwamap.ShopData) => {
+    setSelectedShop(shop);
+  }, []);
+
+  // 検索結果を受け取るハンドラ
+  const handleSearchResults = useCallback((results: Pwamap.ShopData[]) => {
+    setFilteredShops(results);
+  }, []);
+
+  // データが更新されたときにフィルタリング結果も更新
+  useEffect(() => {
+    if (shopList.length > 0) {
+      setFilteredShops(shopList);
+    }
+  }, [shopList]);
+
+  // 永続化されたMapコンポーネント
+  const persistentMap = useMemo(() => {
+    const isHomePage = location.pathname === '/';
+    return (
+      <LazyMap 
+        data={filteredShops} 
+        selectedShop={selectedShop}
+        onSelectShop={handleSelectShop}
+        initialData={shopList}
+        style={{ 
+          display: isHomePage ? 'block' : 'none',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: 'calc(100% - 50px)',
+          zIndex: isHomePage ? 1 : -1,
+          pointerEvents: isHomePage ? 'auto' : 'none'
+        }}
+      />
+    );
+  }, [filteredShops, selectedShop, handleSelectShop, shopList, location.pathname]);
+
   // メモ化されたルートコンポーネント
   const routes = useMemo(() => (
     <Routes>
-      <Route path="/" element={<Home data={shopList} />} />
+      <Route path="/" element={
+        <Home 
+          data={shopList} 
+          selectedShop={selectedShop}
+          onSelectShop={handleSelectShop}
+          onSearchResults={handleSearchResults}
+        />
+      } />
       <Route path="/list" element={<List data={shopList} />} />
       <Route path="/category" element={<Category data={shopList} />} />
       <Route path="/images" element={<Images data={shopList} />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/events" element={<Events />} />
     </Routes>
-  ), [shopList]);
+  ), [shopList, selectedShop, handleSelectShop, handleSearchResults]);
 
   if (loading) return <div className="app-loading">読み込み中...</div>;
   if (error) return <div className="app-error">{error}</div>;
@@ -142,6 +193,7 @@ const App: React.FC = React.memo(() => {
         <div className="app-body">
           {routes}
         </div>
+        {persistentMap}
         <div id="modal-root"></div>
         <div className="app-footer">
           <Tabbar />
