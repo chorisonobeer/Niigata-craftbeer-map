@@ -56,6 +56,23 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
     }
   }, [data]);
 
+  // カテゴリごとの件数を計算
+  const getCategoryCount = (category: string): number => {
+    return data.filter(shop => {
+      if (!shop['カテゴリ']) return false;
+      const shopCategories = shop['カテゴリ']
+        .split(/,|、|\s+/)
+        .map(cat => cat.trim())
+        .filter(cat => cat !== '');
+      return shopCategories.includes(category);
+    }).length;
+  };
+
+  // エリアごとの件数を計算
+  const getAreaCount = (area: string): number => {
+    return data.filter(shop => shop['エリア'] === area).length;
+  };
+
   // エリア一覧を作成
   useEffect(() => {
     if (data.length > 0) {
@@ -262,7 +279,8 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
                   className="custom-dropdown-item"
                   onClick={() => handleCategorySelect('')}
                 >
-                  すべて
+                  <span className="dropdown-item-text">すべて</span>
+                  <span className="dropdown-item-count">{data.length}</span>
                 </div>
                 {categories.map((category) => (
                   <div
@@ -270,7 +288,8 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
                     className="custom-dropdown-item"
                     onClick={() => handleCategorySelect(category)}
                   >
-                    {category}
+                    <span className="dropdown-item-text">{category}</span>
+                    <span className="dropdown-item-count">{getCategoryCount(category)}</span>
                   </div>
                 ))}
               </div>
@@ -292,7 +311,8 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
                   className="custom-dropdown-item"
                   onClick={() => handleAreaSelect('')}
                 >
-                  すべて
+                  <span className="dropdown-item-text">すべて</span>
+                  <span className="dropdown-item-count">{data.length}</span>
                 </div>
                 {areas.map((area) => (
                   <div
@@ -300,7 +320,8 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
                     className="custom-dropdown-item"
                     onClick={() => handleAreaSelect(area)}
                   >
-                    {area}
+                    <span className="dropdown-item-text">{area}</span>
+                    <span className="dropdown-item-count">{getAreaCount(area)}</span>
                   </div>
                 ))}
               </div>
