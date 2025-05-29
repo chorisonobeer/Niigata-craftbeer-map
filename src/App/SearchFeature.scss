@@ -64,28 +64,41 @@
       display: flex;
       gap: 4px;
       position: relative;
+      
+      &.first-row {
+        // 1段目：カテゴリとエリア
+        .filter-item {
+          flex: 1;
+          
+          &.category-filter {
+            min-width: 120px;
+          }
+          
+          &.area-filter {
+            min-width: 120px;
+          }
+        }
+      }
+      
+      &.second-row {
+        // 2段目：現在営業中と駐車場有り
+        .filter-item {
+          flex: 1;
+          
+          &.operation-filter {
+            margin-left: 0;
+          }
+          
+          &.parking-filter {
+            position: static;
+            margin-left: 0;
+          }
+        }
+      }
     }
     
     .filter-item {
       position: relative;
-      
-      &.category-filter {
-        min-width: 120px;
-      }
-      
-      &.area-filter {
-        min-width: 120px;
-      }
-      
-      &.operation-filter {
-        margin-left: auto;
-      }
-      
-      &.parking-filter {
-        position: absolute;
-        right: 0;
-        top: calc(100% + 4px);
-      }
       
       .custom-dropdown-header {
         display: flex;
@@ -164,6 +177,7 @@
         font-size: 12px;
         text-align: center;
         white-space: nowrap;
+        width: 100%;
         
         &.active {
           background: #53a9e3;
@@ -177,13 +191,13 @@
   // 検索結果
   .search-results {
     position: absolute;
-    top: 100px;
+    top: 120px;
     left: 10px;
     width: calc(85% - 0px);
     background: white;
     border: 1px solid #ddd;
     border-radius: 4px;
-    max-height: calc(100vh - 350px);
+    max-height: calc(100vh - 370px);
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

@@ -263,7 +263,7 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
       </div>
 
       <div className="filter-container">
-        <div className="filter-row">
+        <div className="filter-row first-row">
           {/* カテゴリドロップダウン */}
           <div className="filter-item category-filter" ref={categoryDropdownRef}>
             <div 
@@ -327,7 +327,9 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
               </div>
             )}
           </div>
+        </div>
 
+        <div className="filter-row second-row">
           {/* 現在営業中ボタン */}
           <div className="filter-item operation-filter">
             <button
@@ -337,9 +339,8 @@ const SearchFeature: React.FC<SearchFeatureProps> = ({ data, onSearchResults, on
               現在営業中
             </button>
           </div>
-        </div>
 
-        <div className="filter-row">
+          {/* 駐車場有りボタン */}
           <div className="filter-item parking-filter">
             <button
               className={`filter-button ${hasParking ? 'active' : ''}`}

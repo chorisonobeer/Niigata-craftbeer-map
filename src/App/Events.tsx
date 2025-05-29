@@ -213,17 +213,17 @@ const Events: React.FC = () => {
                 </a>
               )}
               {selectedEvent["Instagram"] && (
-                <a href={selectedEvent["Instagram"]} target="_blank" rel="noopener noreferrer" title="Instagram" className="event-link social-link">
+                <a href={selectedEvent["Instagram"].startsWith('http') ? selectedEvent["Instagram"] : `https://instagram.com/${selectedEvent["Instagram"]}`} target="_blank" rel="noopener noreferrer" title="Instagram" className="event-link social-link">
                   <i className="fab fa-instagram"></i>
                 </a>
               )}
               {selectedEvent["Facebook"] && (
-                <a href={selectedEvent["Facebook"]} target="_blank" rel="noopener noreferrer" title="Facebook" className="event-link social-link">
+                <a href={selectedEvent["Facebook"].startsWith('http') ? selectedEvent["Facebook"] : `https://www.facebook.com/${selectedEvent["Facebook"]}`} target="_blank" rel="noopener noreferrer" title="Facebook" className="event-link social-link">
                   <i className="fab fa-facebook"></i>
                 </a>
               )}
               {selectedEvent["X"] && (
-                <a href={selectedEvent["X"]} target="_blank" rel="noopener noreferrer" title="X (旧Twitter)" className="event-link social-link">
+                <a href={selectedEvent["X"].startsWith('http') ? selectedEvent["X"] : `https://twitter.com/${selectedEvent["X"]}`} target="_blank" rel="noopener noreferrer" title="X (旧Twitter)" className="event-link social-link">
                   <i className="fab fa-x-twitter"></i>
                 </a>
               )}

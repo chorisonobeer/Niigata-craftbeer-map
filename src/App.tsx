@@ -21,7 +21,7 @@ import './App.scss';
 
 const App: React.FC = React.memo(() => {
   const [shopList, setShopList] = useState<Pwamap.ShopData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [selectedShop, setSelectedShop] = useState<Pwamap.ShopData | undefined>(undefined);
   const [filteredShops, setFilteredShops] = useState<Pwamap.ShopData[]>([]);
@@ -37,7 +37,6 @@ const App: React.FC = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
     setError("");
     const cacheKey = "shopListCache";
     const cached = sessionStorage.getItem(cacheKey);
@@ -45,7 +44,6 @@ const App: React.FC = React.memo(() => {
       try {
         const parsed = JSON.parse(cached);
         setShopList(parsed);
-        setLoading(false);
         // バックグラウンドで最新データ取得
         fetch(config.data_url)
           .then((response) => {
@@ -75,13 +73,11 @@ const App: React.FC = React.memo(() => {
               },
               error: () => {
                 setError("CSVパースエラー");
-                setLoading(false);
               }
             });
           })
           .catch((e) => {
             setError(e.message);
-            setLoading(false);
           });
         return;
       } catch (e) {
@@ -111,18 +107,15 @@ const App: React.FC = React.memo(() => {
             sortShopList(nextShopList).then((sortedShopList) => {
               setShopList(sortedShopList);
               sessionStorage.setItem(cacheKey, JSON.stringify(sortedShopList));
-              setLoading(false);
             });
           },
           error: () => {
             setError("CSVパースエラー");
-            setLoading(false);
           }
         });
       })
       .catch((e) => {
         setError(e.message);
-        setLoading(false);
       });
   }, [sortShopList]);
 
@@ -185,7 +178,6 @@ const App: React.FC = React.memo(() => {
     </Routes>
   ), [shopList, selectedShop, handleSelectShop, handleSearchResults]);
 
-  if (loading) return <LoadingSpinner variant="dots" size="lg" text="アプリを初期化中..." />;
   if (error) return <div className="app-error">{error}</div>;
 
   return (
