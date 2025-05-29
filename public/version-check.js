@@ -3,7 +3,7 @@
   'use strict';
   
   // 固定バージョン番号を使用（アプリ更新時に手動で変更）
-  const currentVersion = '1.0.0';
+  const currentVersion = '1.0.1';
   const versionKey = 'app_version';
   const lastVersion = localStorage.getItem(versionKey);
   

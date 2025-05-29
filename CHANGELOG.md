@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2025-01-03
+
+### Changed
+- フィルタリング部分のUIを2段構成に修正（マップコントロールとの重複解消）
+- アプリ起動時のローディング状態を削除（マップの即座表示）
+- バージョン管理システムの改善
+
 ## [1.0.0] - 2024-12-19
 
 ### Major Changes

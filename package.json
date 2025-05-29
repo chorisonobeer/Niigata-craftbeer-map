@@ -1,6 +1,6 @@
 {
   "name": "geolonia-pwa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",
@@ -18,32 +18,42 @@
     "@types/react-dom": "^17.0.14",
     "chalk": "^5.0.1",
     "csv-parse": "^4.8.8",
-    "icon-gen": "^3.0.0",
-    "next-qrcode": "^2.5.1",
-    "papaparse": "^5.4.1",
-    "pwa-asset-generator": "^6.0.6",
+    "geolonia": "^2.5.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-icons": "^4.3.1",
-    "react-infinite-scroll-component": "^6.1.0",
     "react-router-dom": "^6.2.2",
-    "react-scripts": "^5.0.1",
-    "react-select": "^5.2.2",
-    "react-share": "^4.4.0",
-    "react-stars": "^2.2.5",
-    "react-swipeable": "^7.0.2",
-    "typescript": "~4.6.2"
+    "react-scripts": "5.0.0",
+    "typescript": "^4.6.2",
+    "web-vitals": "^2.1.4",
+    "workbox-background-sync": "^6.5.0",
+    "workbox-broadcast-update": "^6.5.0",
+    "workbox-cacheable-response": "^6.5.0",
+    "workbox-core": "^6.5.0",
+    "workbox-expiration": "^6.5.0",
+    "workbox-google-analytics": "^6.5.0",
+    "workbox-navigation-preload": "^6.5.0",
+    "workbox-precaching": "^6.5.0",
+    "workbox-range-requests": "^6.5.0",
+    "workbox-routing": "^6.5.0",
+    "workbox-strategies": "^6.5.0",
+    "workbox-streams": "^6.5.0"
   },
   "scripts": {
-    "start": "node bin/config.js && react-scripts start",
-    "build": "node bin/config.js && react-scripts build",
-    "build:assets": "pwa-asset-generator public/logo.svg ./public/ --index ./public/index.html --manifest ./public/manifest.json --favicon true",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "version:update": "node scripts/update-version.js",
+    "version:auto": "node scripts/auto-version-update.js",
+    "version:patch": "node scripts/update-version.js patch",
+    "version:minor": "node scripts/update-version.js minor",
+    "version:major": "node scripts/update-version.js major"
   },
-  "homepage": ".",
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
@@ -58,16 +68,6 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/lodash": "^4.17.15",
-    "@types/papaparse": "^5.3.14",
-    "@types/react-infinite-scroller": "^1.2.3",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/react-stars": "^2.2.1",
-    "axios": "^0.26.1",
-    "node-fetch": "2",
-    "sass": "^1.49.9",
-    "stream-browserify": "^3.0.0",
-    "yaml": "^1.10.2"
+    "@types/mapbox__geojson-extent": "^1.0.1"
   }
 }
