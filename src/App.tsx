@@ -15,13 +15,11 @@ import AboutUs from './App/AboutUs';
 import Events from './App/Events';
 import Tabbar from './App/Tabbar';
 import LazyMap from './App/LazyMap';
-import LoadingSpinner from './App/LoadingSpinner';
 import config from "./config.json";
 import './App.scss';
 
 const App: React.FC = React.memo(() => {
   const [shopList, setShopList] = useState<Pwamap.ShopData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [selectedShop, setSelectedShop] = useState<Pwamap.ShopData | undefined>(undefined);
   const [filteredShops, setFilteredShops] = useState<Pwamap.ShopData[]>([]);
