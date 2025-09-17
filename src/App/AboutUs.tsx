@@ -1,13 +1,13 @@
 /** 
  * /src/App/AboutUs.tsx
- * 2025-05-02T10:00+09:00
- * 変更概要: 新潟クラフトビールマップ向けに全面リライト - UIデザイン改善
+ * 2025-09-17T11:00+09:00
+ * 変更概要: 新しいバージョン管理システムに対応、バージョン表示機能を追加
  */
 import React, { useEffect, useState } from 'react';
 import './AboutUs.scss';
 import config from '../config.json';
 import { FaPlus, FaBeer, FaMapMarkedAlt, FaSearch, FaCamera, FaInfoCircle } from 'react-icons/fa';
-import { getVersionDisplayString, getDetailedVersionString, getStoredVersion } from '../utils/version';
+import VersionManager from '../utils/versionManager';
 
 // スポンサー企業情報の型定義
 type Sponsor = {
@@ -29,6 +29,11 @@ const sponsors: Sponsor[] = [
 const Content = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [versionInfo, setVersionInfo] = useState<{
+    version: string;
+    buildDate: string;
+    timestamp: number;
+  } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -37,10 +42,58 @@ const Content = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    // バージョン情報を取得
+    const versionManager = VersionManager.getInstance();
+    const currentVersion = versionManager.getCurrentVersion();
+    
+    if (currentVersion) {
+      setVersionInfo({
+        version: currentVersion.version,
+        buildDate: currentVersion.buildDate,
+        timestamp: currentVersion.timestamp
+      });
+    } else {
+      // 環境変数から直接取得
+      const envVersion = process.env.REACT_APP_BUILD_VERSION;
+      const envDate = process.env.REACT_APP_BUILD_DATE;
+      const envTimestamp = process.env.REACT_APP_BUILD_TIMESTAMP;
+      
+      if (envVersion && envDate && envTimestamp) {
+        setVersionInfo({
+          version: envVersion,
+          buildDate: envDate,
+          timestamp: parseInt(envTimestamp)
+        });
+      }
+    }
+  }, []);
+
   const clickHandler = () => {
     if (config.form_url) {
       window.location.href = config.form_url;
     }
+  };
+
+  const formatVersionDisplay = () => {
+    if (!versionInfo) return 'v1.0.0';
+    
+    // タイムスタンプから短縮バージョンを生成
+    const date = new Date(versionInfo.timestamp);
+    const year = date.getFullYear().toString().slice(-2); // 下2桁
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const minute = date.getMinutes().toString().padStart(2, '0');
+    
+    return `v${year}.${month}.${day}.${hour}${minute}`;
+  };
+
+  const formatDetailedVersion = () => {
+    if (!versionInfo) return '詳細情報なし';
+    
+    const date = new Date(versionInfo.timestamp);
+    return `${versionInfo.version} (${date.toLocaleString('ja-JP')})`;
   };
 
   return (
@@ -48,7 +101,14 @@ const Content = () => {
       <div className={`hero-section ${isVisible ? 'visible' : ''}`}>
         <div className="hero-gradient"></div>
         <div className="hero-content">
-          <h1 className="hero-title">NIIGATA CRAFT BEER MAP</h1>
+          <div className="hero-title-container">
+            <h1 className="hero-title">NIIGATA CRAFT BEER MAP</h1>
+            {versionInfo && (
+              <div className="version-badge">
+                {formatVersionDisplay()}
+              </div>
+            )}
+          </div>
           <p className="hero-subtitle">新潟のクラフトビールを、もっと身近に、もっとクールに。</p>
           <div className="hero-image-container">
             <img src="/dummy-hero.jpg" alt="新潟クラフトビールイメージ" className="hero-image" />
@@ -170,15 +230,15 @@ const Content = () => {
               <div className="version-details">
                 <div className="version-item">
                   <span className="version-label">現在のバージョン:</span>
-                  <span className="version-value">{getVersionDisplayString()}</span>
+                  <span className="version-value">{formatVersionDisplay()}</span>
                 </div>
                 <div className="version-item">
                   <span className="version-label">詳細情報:</span>
-                  <span className="version-value">{getDetailedVersionString()}</span>
+                  <span className="version-value">{formatDetailedVersion()}</span>
                 </div>
                 <div className="version-item">
-                  <span className="version-label">インストール済み:</span>
-                  <span className="version-value">{getStoredVersion() || 'なし'}</span>
+                  <span className="version-label">ビルドタイムスタンプ:</span>
+                  <span className="version-value">{versionInfo?.timestamp || 'なし'}</span>
                 </div>
               </div>
               <p className="version-note">
