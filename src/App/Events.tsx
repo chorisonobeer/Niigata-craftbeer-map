@@ -1,7 +1,7 @@
 /** 
  * /src/App/Events.tsx
- * 2025-05-02T10:00+09:00
- * 変更概要: イベント情報のsessionStorageキャッシュ機構を追加
+ * 2025-09-17T10:00+09:00
+ * 変更概要: 参加ブルワリータグ表示機能を追加（4つ以上の場合は展開表示）
  */
 
 import React, { useEffect, useState } from "react";
@@ -10,7 +10,9 @@ import config from "../config.json";
 import LoadingSpinner from "./LoadingSpinner";
 import "./Events.scss";
 
-type EventData = Pwamap.EventData;
+type EventData = Pwamap.EventData & {
+  "参加ブルワリー"?: string;
+};
 
 const Events: React.FC = () => {
   // sessionStorageキャッシュを同期的にチェックして初期状態を設定
@@ -32,6 +34,7 @@ const Events: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [imageModalUrl, setImageModalUrl] = useState<string | null>(null);
+  const [expandedBreweries, setExpandedBreweries] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     // sessionStorageキャッシュ確認
@@ -155,6 +158,67 @@ const Events: React.FC = () => {
     setSelectedEvent(undefined);
   };
 
+  const toggleBreweriesExpansion = (eventIndex: number) => {
+    setExpandedBreweries(prev => ({
+      ...prev,
+      [eventIndex]: !prev[eventIndex]
+    }));
+  };
+
+  // 参加ブルワリータグを表示するコンポーネント
+  const BreweriesDisplay: React.FC<{ 
+    breweries: string; 
+    eventIndex: number; 
+    isExpanded: boolean; 
+    onToggle: () => void;
+    maxVisible?: number;
+  }> = ({ breweries, eventIndex, isExpanded, onToggle, maxVisible = 3 }) => {
+    const breweryList = breweries.split(/[,、\s]+/).map(b => b.trim()).filter(b => b);
+    
+    if (breweryList.length <= maxVisible) {
+      return (
+        <div className="breweries-container">
+          {breweryList.map((brewery, index) => (
+            <span key={index} className="brewery-tag">{brewery}</span>
+          ))}
+        </div>
+      );
+    }
+
+    const visibleBreweries = isExpanded ? breweryList : breweryList.slice(0, maxVisible);
+    const hiddenCount = breweryList.length - maxVisible;
+
+    return (
+      <div className="breweries-container">
+        {visibleBreweries.map((brewery, index) => (
+          <span key={index} className="brewery-tag">{brewery}</span>
+        ))}
+        {!isExpanded && (
+          <button 
+            className="expand-breweries-btn" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+          >
+            +{hiddenCount}個
+          </button>
+        )}
+        {isExpanded && (
+          <button 
+            className="collapse-breweries-btn" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+          >
+            ▲
+          </button>
+        )}
+      </div>
+    );
+  };
+
   if (loading) return <LoadingSpinner variant="circular" size="md" text="イベント情報を読み込み中..." />;
   if (error) return <div className="events-error">{error}</div>;
 
@@ -165,6 +229,9 @@ const Events: React.FC = () => {
         {eventList.length === 0 && <div>イベント情報がありません</div>}
         {eventList.map((event) => {
           const imageUrl = event["画像URL1"] as string | undefined;
+          const breweries = event["参加ブルワリー"] as string | undefined;
+          const isBreweriesExpanded = expandedBreweries[event.index] || false;
+          
           return (
             <div key={event.index} className="event-card" onClick={() => showEventDetail(event)}>
               {imageUrl && (
@@ -178,6 +245,20 @@ const Events: React.FC = () => {
                   <span className="event-date">{event["開催期間"]}</span>
                 </div>
                 <div className="event-place">{event["場所"]?.replace(/〒\d{3}-\d{4}\s*/, '')}</div>
+                
+                {/* 参加ブルワリー表示 */}
+                {breweries && (
+                  <div className="event-breweries-section">
+                    <strong className="breweries-label">参加ブルワリー:</strong>
+                    <BreweriesDisplay
+                      breweries={breweries}
+                      eventIndex={event.index}
+                      isExpanded={isBreweriesExpanded}
+                      onToggle={() => toggleBreweriesExpansion(event.index)}
+                    />
+                  </div>
+                )}
+                
                 {/* <div className="event-description">{event["説明文"]?.slice(0, 60)}...</div> */}
               </div>
             </div>
@@ -205,6 +286,19 @@ const Events: React.FC = () => {
               </span>
             </div>
             <div className="event-detail-section event-detail-description">{selectedEvent["説明文"]}</div>
+            
+            {/* 参加ブルワリー詳細表示 */}
+            {selectedEvent["参加ブルワリー"] && (
+              <div className="event-detail-section event-detail-breweries">
+                <strong>参加ブルワリー:</strong>
+                <div className="breweries-detail-container">
+                  {(selectedEvent["参加ブルワリー"] as string).split(/[,、\s]+/).map((brewery, index) => (
+                    brewery.trim() && <span key={index} className="brewery-tag-detail">{brewery.trim()}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* 公式サイト・SNSリンク */}
             <div className="event-detail-section event-detail-links">
               {selectedEvent["公式サイト"] && (

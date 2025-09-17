@@ -526,3 +526,179 @@
   margin-top: 8vw;
   font-size: clamp(1rem, 4.4vw, 1.4rem);
 }
+
+/* 参加ブルワリー表示用の追加CSS */
+
+/* イベントカード内の参加ブルワリー表示 */
+.event-breweries-section {
+  margin-top: 3vw;
+  margin-bottom: 2vw;
+}
+
+.breweries-label {
+  font-size: clamp(0.8rem, 3.6vw, 1rem);
+  color: #555;
+  margin-bottom: 2vw;
+  display: block;
+  font-weight: 600;
+}
+
+.breweries-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2vw;
+  align-items: center;
+}
+
+.brewery-tag {
+  background: linear-gradient(135deg, rgba(0, 160, 230, 0.1), rgba(79, 195, 247, 0.1));
+  color: #00A0E6;
+  padding: 2vw 4vw;
+  border-radius: 3vw;
+  font-size: clamp(0.7rem, 3.2vw, 0.9rem);
+  font-weight: 500;
+  border: 1px solid rgba(0, 160, 230, 0.3);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.brewery-tag:hover {
+  background: linear-gradient(135deg, rgba(0, 160, 230, 0.2), rgba(79, 195, 247, 0.2));
+  transform: translateY(-0.4vw);
+}
+
+.expand-breweries-btn,
+.collapse-breweries-btn {
+  background-color: rgba(245, 245, 245, 0.9);
+  color: #666;
+  border: 1px solid rgba(221, 221, 221, 0.8);
+  border-radius: 3vw;
+  padding: 2vw 4vw;
+  font-size: clamp(0.7rem, 3.2vw, 0.9rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  backdrop-filter: blur(5px);
+}
+
+.expand-breweries-btn:hover,
+.collapse-breweries-btn:hover {
+  background-color: rgba(224, 224, 224, 0.9);
+  color: #333;
+  transform: translateY(-0.4vw);
+}
+
+/* モーダル内の参加ブルワリー詳細表示 */
+.event-detail-breweries {
+  margin: 4vw 0;
+}
+
+.breweries-detail-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3vw;
+  margin-top: 2vw;
+}
+
+.brewery-tag-detail {
+  background: linear-gradient(135deg, rgba(0, 160, 230, 0.1), rgba(79, 195, 247, 0.1));
+  color: #00A0E6;
+  padding: 3vw 5vw;
+  border-radius: 4vw;
+  font-size: clamp(0.8rem, 3.8vw, 1rem);
+  font-weight: 500;
+  border: 1px solid rgba(0, 160, 230, 0.3);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.brewery-tag-detail:hover {
+  background: linear-gradient(135deg, rgba(0, 160, 230, 0.2), rgba(79, 195, 247, 0.2));
+  transform: translateY(-0.8vw);
+  box-shadow: 0 1.6vw 6.4vw rgba(0, 160, 230, 0.15);
+}
+
+/* デスクトップ版のレスポンシブ対応 */
+@media (min-width: 768px) {
+  .event-breweries-section {
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .breweries-label {
+    margin-bottom: 8px;
+  }
+  
+  .breweries-container {
+    gap: 8px;
+  }
+  
+  .brewery-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+  
+  .brewery-tag:hover {
+    transform: translateY(-1px);
+  }
+  
+  .expand-breweries-btn,
+  .collapse-breweries-btn {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+  
+  .expand-breweries-btn:hover,
+  .collapse-breweries-btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  .event-detail-breweries {
+    margin: 16px 0;
+  }
+  
+  .breweries-detail-container {
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .brewery-tag-detail {
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+  }
+  
+  .brewery-tag-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 160, 230, 0.15);
+  }
+}
+
+/* モバイル端末での細かい調整 */
+@media (max-width: 480px) {
+  .breweries-container {
+    gap: 1.5vw;
+  }
+  
+  .brewery-tag {
+    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    padding: 1.5vw 3vw;
+  }
+  
+  .expand-breweries-btn,
+  .collapse-breweries-btn {
+    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    padding: 1.5vw 3vw;
+  }
+  
+  .breweries-detail-container {
+    gap: 2vw;
+  }
+  
+  .brewery-tag-detail {
+    font-size: clamp(0.75rem, 3.5vw, 0.9rem);
+    padding: 2.5vw 4vw;
+  }
+}
