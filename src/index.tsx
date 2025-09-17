@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { HashRouter } from "react-router-dom";
 import Container from './Container';
 import './index.scss'
+import './global-pull-refresh-disable.css'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import VersionManager from './utils/versionManager';
 
