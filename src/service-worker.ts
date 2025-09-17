@@ -11,7 +11,7 @@
 import { clientsClaim, skipWaiting } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, NetworkFirst, CacheFirst } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -206,6 +206,7 @@ self.addEventListener('activate', (event) => {
               console.log('🗑️ Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
+            return Promise.resolve(); // 条件に合わない場合も戻り値を返す
           })
         );
       })
