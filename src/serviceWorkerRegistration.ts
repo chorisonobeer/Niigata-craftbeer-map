@@ -61,21 +61,37 @@ function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      console.log('🔧 Service Worker registered successfully');
+      
+      // 即座に更新をチェック
+      registration.update().then(() => {
+        console.log('🔍 Service Worker update check completed');
+      });
+
       registration.onupdatefound = () => {
+        console.log('🆕 Service Worker update found');
         const installingWorker = registration.installing;
         if (installingWorker == null) {
           return;
         }
         installingWorker.onstatechange = () => {
+          console.log('🔄 Service Worker state changed:', installingWorker.state);
+          
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,
               // but the previous service worker will still serve the older
               // content until all client tabs are closed.
-              console.log(
-                'New content is available and will be used when all ' +
-                  'tabs for this page are closed. See https://cra.link/PWA.'
-              );
+              console.log('🔄 New content is available - applying immediately');
+
+              // 即座に新しいService Workerを有効化
+              installingWorker.postMessage({ type: 'SKIP_WAITING' });
+              
+              // 少し待ってからページをリロード
+              setTimeout(() => {
+                console.log('🔄 Reloading to apply updates');
+                window.location.reload();
+              }, 1000);
 
               // Execute callback
               if (config && config.onUpdate) {
@@ -85,7 +101,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               // At this point, everything has been precached.
               // It's the perfect time to display a
               // "Content is cached for offline use." message.
-              console.log('Content is cached for offline use.');
+              console.log('✅ Content is cached for offline use.');
 
               // Execute callback
               if (config && config.onSuccess) {
@@ -95,9 +111,18 @@ function registerValidSW(swUrl: string, config?: Config) {
           }
         };
       };
+
+      // 定期的に更新をチェック（5分間隔）
+      setInterval(() => {
+        console.log('⏰ Periodic Service Worker update check');
+        registration.update().catch(error => {
+          console.warn('⚠️ Service Worker update check failed:', error);
+        });
+      }, 5 * 60 * 1000);
+
     })
     .catch((error) => {
-      console.error('Error during service worker registration:', error);
+      console.error('❌ Error during service worker registration:', error);
     });
 }
 
@@ -105,6 +130,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
+    cache: 'no-cache' // キャッシュを回避
   })
     .then((response) => {
       // Ensure service worker exists, and that we really are getting a JS file.
@@ -116,6 +142,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
           registration.unregister().then(() => {
+            console.log('🔄 Service Worker unregistered, reloading page');
             window.location.reload();
           });
         });
@@ -125,7 +152,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       }
     })
     .catch(() => {
-      console.log('No internet connection found. App is running in offline mode.');
+      console.log('📱 No internet connection found. App is running in offline mode.');
     });
 }
 
@@ -133,10 +160,30 @@ export function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
       .then((registration) => {
-        registration.unregister();
+        registration.unregister().then(() => {
+          console.log('🗑️ Service Worker unregistered');
+        });
       })
       .catch((error) => {
-        console.error(error.message);
+        console.error('❌ Error unregistering Service Worker:', error.message);
       });
+  }
+}
+
+/**
+ * 強制的にService Workerを更新
+ */
+export function forceUpdate() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        console.log('🔄 Force updating Service Worker');
+        registration.update();
+        
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
   }
 }

@@ -1,7 +1,7 @@
 {
   "short_name": "Niigata Craftbeer Map",
   "name": "新潟クラフトビールマップ",
-  "version": "1.0.0",
+  "version": "2025.09.17.0702",
   "icons": [
     {
       "src": "manifest-icon-192.maskable.png",
@@ -36,5 +36,8 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#FFFFFF",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "build_timestamp": 1758106965732,
+  "build_date": "2025-09-17T11:02:45.732Z",
+  "last_updated": "2025-09-17T11:02:45.732Z"
 }

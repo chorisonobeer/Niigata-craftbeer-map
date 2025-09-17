@@ -36,10 +36,12 @@
   },
   "scripts": {
     "start": "node bin/config.js && react-scripts start",
-    "build": "node bin/config.js && react-scripts build",
+    "build": "node bin/version-inject.js && node bin/config.js && react-scripts build",
     "build:assets": "pwa-asset-generator public/logo.svg ./public/ --index ./public/index.html --manifest ./public/manifest.json --favicon true",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "version:inject": "node bin/version-inject.js",
+    "build:clean": "node bin/version-inject.js && node bin/config.js && react-scripts build"
   },
   "homepage": ".",
   "eslintConfig": {
