@@ -111,7 +111,7 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
           'circle-radius': 13,
           'circle-color': [
             'match',
-            ['get', 'category'],
+            ['get', 'カテゴリ'],
             ...matchPairs,
             categoryColors['その他'], // デフォルト値
           ],
