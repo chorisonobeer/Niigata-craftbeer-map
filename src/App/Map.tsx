@@ -40,6 +40,23 @@ const CSS: React.CSSProperties = {
 
 
 
+
+const categoryColors: { [key: string]: string } = {
+  'ブルワリー': '#007bff',
+  'ボトルショップ': '#28a745',
+  'ビアバー': '#ffc107',
+  'その他': '#6c757d',
+};
+
+const matchPairs: (string | string)[] = Object.entries(categoryColors)
+  .flatMap(([category, color]) => {
+    // 'その他' カテゴリはデフォルト値として使用するため、matchPairs から除外
+    if (category === 'その他') return [];
+    return [category, color];
+  });
+
+
+
 const hidePoiLayers = (map: any) => {
   const hideLayers = [
     'poi',
@@ -92,7 +109,12 @@ function Map<T extends MapPointBase = MapPointBase>(props: MapProps<T>) {
         filter: ['all', ['==', '$type', 'Point']],
         paint: {
           'circle-radius': 13,
-          'circle-color': '#FF0000', // TODO: カテゴリ色分けは必要に応じて拡張
+          'circle-color': [
+            'match',
+            ['get', 'category'],
+            ...matchPairs,
+            categoryColors['その他'], // デフォルト値
+          ],
           'circle-opacity': 0.4,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#FFFFFF',
